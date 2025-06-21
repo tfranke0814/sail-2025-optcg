@@ -95,7 +95,7 @@ def loader_optcg_rulebooks():
     if comp_rules is None or tourney_rules is None:
         print("Failed to load One Piece Card Game rules.")
         print("Please check the URLs or your internet connection.")
-        return None, None# Exit early if loading fails
+        return None, None # Exit early if loading fails
     
     # Tag each page/chunk with its source
     for page in comp_rules:
@@ -275,9 +275,10 @@ def create_or_load_vectorstore_optcg_rulebooks():
     
 
 ### NOTE: The following function is for deleting the vector store from disk.
-## This should only be used if you need to update the vector store with new documents or changes. Otherwise, only if you absoutely need to delete the vector store from the disk. 
+## This should only be used if you need to update the vector store with new documents or changes.
+# Otherwise, only if you absoutely need to delete the vector store from the disk. 
 
-## The implentation of storing the vector store on disk is to ensure that it persists across sessions and does not need to be recreated every time you run the code. Limiting the need to re-embed the documents every time you run the code. Thus, reducing costs and improving performance.
+## The implementation of storing the vector store on disk is to ensure that it persists across sessions and does not need to be recreated every time you run the code. Limiting the need to re-embed the documents every time you run the code. Thus, reducing costs and improving performance.
 
 def delete_vectorstore_optcg_rulebooks():
     """Delete the persistent vector store for One Piece Card Game rules"""
