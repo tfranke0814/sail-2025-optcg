@@ -1,0 +1,291 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.deck-builder-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+
+/* Sidebar Styles */
+.card-sidebar {
+  width: 400px;
+  flex-shrink: 0;
+  background-color: #242424;
+  padding: 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  border-right: 2px solid #444;
+}
+
+.search-filters .search-input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: white;
+}
+
+.search-filters .filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sidebar-btn {
+  flex-grow: 1;
+  padding: 8px;
+  background-color: #3e3e3e;
+  border: 1px solid #555;
+  color: #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sidebar-btn.clear-btn {
+  background-color: #8c2a2a;
+}
+
+.search-filters .filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-filters select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: #ccc;
+}
+
+.card-list-display {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #444;
+}
+
+.card-placeholder {
+    height: 150px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+/* Game Board Styles */
+.game-board-container {
+  flex-grow: 1;
+  overflow-y: auto; /* Enable scrolling for the entire board */
+  position: relative;
+  background-image: url('./assets/background.png');
+  background-size: cover;
+  background-attachment: fixed; /* Keep background fixed during scroll */
+  background-position: center;
+}
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px; /* More vertical padding */
+  box-sizing: border-box;
+  position: relative;
+  gap: 40px; /* Space between player areas */
+}
+
+.game-board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.player-area {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Flip the top player's board for a mirrored view */
+.player-area[data-position="top"] {
+  flex-direction: column-reverse;
+}
+.player-area[data-position="top"] .main-section {
+  flex-direction: row-reverse;
+}
+.player-area[data-position="top"] .center-field {
+  flex-direction: column-reverse;
+}
+.player-area[data-position="top"] .character-area {
+  flex-direction: column-reverse;
+}
+
+.card-slot {
+  border: 2px dashed #666;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #999;
+  background-color: rgba(0, 0, 0, 0.4);
+  min-width: 80px;
+  min-height: 110px;
+  margin: 5px;
+  backdrop-filter: blur(2px);
+}
+
+.top-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.don-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.don-counter {
+    background-color: #222;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.don-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.don-slot {
+  width: 80px;
+  height: 110px;
+}
+
+.main-section {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1400px;
+}
+
+.side-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.life-controls {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.control-button {
+    background-color: #333;
+    border: 1px solid #555;
+    color: #ccc;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 2px 0;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.life-slot {
+  width: 80px;
+  height: 110px;
+}
+
+.center-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.board-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.action-button {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #ccc;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.leader-stage-area {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.leader-slot, .stage-slot, .event-slot {
+    width: 100px;
+    height: 140px;
+}
+
+.character-area {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.character-slot {
+    width: 100px;
+    height: 140px;
+}
+
+.logo-area {
+    position: fixed; /* Fixed position so it doesn't scroll with the board */
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.logo-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #222;
+    border: 3px solid #555;
+}
