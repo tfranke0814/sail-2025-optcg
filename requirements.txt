@@ -84,8 +84,6 @@ opentelemetry-exporter-otlp-proto-grpc==1.34.1
 opentelemetry-proto==1.34.1
 opentelemetry-sdk==1.34.1
 opentelemetry-semantic-conventions==0.55b1
--e git+ssh://git@github.com/tfranke0814/sail-2025-optcg.git@6861962216f6bb42cc3dcb3699c64b7febd45b7c#egg=optcg_sail
--e git+ssh://git@github.com/tfranke0814/sail-2025-optcg.git@6861962216f6bb42cc3dcb3699c64b7febd45b7c#egg=optcg_sail_program
 orjson==3.10.18
 ormsgpack==1.10.0
 overrides==7.7.0
