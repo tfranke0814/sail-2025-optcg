@@ -59,15 +59,21 @@ class BaseAgent(ABC):
             checkpointer=self.memory
         )
     
-    def chat(self, message, thread_id=None):
+    def chat(self, message, thread_id=None, verbose=False):
         """Chat with the agent"""
         if thread_id is None: # Ensures a unique thread ID if not provided
             thread_id = str(uuid.uuid4())
         
-        return self.agent.invoke(
+        response = self.agent.invoke(
             {"messages": [{"role": "user", "content": message}]},
             config={"configurable": {"thread_id": thread_id}}
         )
+        
+        if verbose:
+            return response
+        else:
+            # Return just the last message content
+            return response["messages"][-1].content
     
     def display_graph(self):
         """Display the agent's graph structure"""
