@@ -35,8 +35,6 @@ python optcg/api.py
 - `GET /health` - Health check
 
 ### Example Usage
-### Example Usage
-### Example Usage
 The `thread_id` parameter is optional and does not need to be specified.
 
 **Using curl:**
