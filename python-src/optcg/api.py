@@ -79,10 +79,11 @@ async def root():
     return {
         "status": "OPTCG Agent API is running",
         "version": "1.0.0",
+        "docs": "/docs",
         "endpoints": {
-            "agents": "/agents",
-            "chat": "/chat",
-            "health": "/health"
+            "GET /agents": "List available agent types",
+            "POST /chat": "Chat with agents", 
+            "GET /health": "Health check"
         }
     }
 
