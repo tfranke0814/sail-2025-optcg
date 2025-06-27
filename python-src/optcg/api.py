@@ -6,13 +6,17 @@ import uuid
 import os
 from contextlib import asynccontextmanager
 import logging
+from dotenv import load_dotenv
 
 # Import Agents
 from optcg.agents import RulebookAgent
 
+# Load environment variables from .env file if it exists
+load_dotenv()  
+
 # Environment validation and logging setup on startup
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
@@ -36,7 +40,7 @@ app = FastAPI(title="OPTCG Agent API", version="1.0.0", lifespan=lifespan)
 # Enable CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React Server; adjust as needed
+    allow_origins=["http://localhost:5173"],  # Vite localhost
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,6 +61,7 @@ class ChatResponse(BaseModel):
 # -- Retains short-term memory threads for each agent
 # -- Resets when the server runtime restarts
 active_agents = {}
+avail_agents = ["rulebook"] # List of available agent types. See /agents endpoint
 
 def get_or_create_agent(agent_type: str):
     """Get or create an agent instance"""
@@ -70,16 +75,24 @@ def get_or_create_agent(agent_type: str):
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
-    return {"status": "OPTCG Agent API is running"}
+    """API status endpoint"""
+    return {
+        "status": "OPTCG Agent API is running",
+        "version": "1.0.0",
+        "endpoints": {
+            "agents": "/agents",
+            "chat": "/chat",
+            "health": "/health"
+        }
+    }
 
 @app.get("/agents")
 async def list_agents():
     """List available agent types"""
     return {
-        "available_agents": ,
-        "description": {
-            "rulebook": "Expert in One Piece TCG rules and gameplay"
+        "available_agents": avail_agents,
+        "descriptions": {
+            "rulebook": "Access to information in the One Piece TCG rulebooks"
         }
     }
 
@@ -87,46 +100,20 @@ async def list_agents():
 async def chat_with_agent(request: ChatRequest):
     """Chat with an agent"""
     try:
-        # Get or create agent
+        # We define the thread outside the chat method even though BaseAgent can handle it internally
+        # This allows us to return the thread_id in the response
+        # The chat method extracts the messasge response in the BaseAgent class, i.e. verbose = False
         agent = get_or_create_agent(request.agent_type)
-        
-        # Generate thread_id if not provided
-        thread_id = request.thread_id or str(uuid.uuid4())
-        
-        # Get response from agent
-        response = agent.chat(request.message, thread_id=thread_id)
-        
-        # Extract the message content from the response
-        if hasattr(response, 'messages') and response.messages:
-            # Get the last message from the agent
-            last_message = response.messages[-1]
-            if hasattr(last_message, 'content'):
-                agent_response = last_message.content
-            else:
-                agent_response = str(last_message)
-        else:
-            agent_response = str(response)
-        
+        actual_thread_id = request.thread_id or str(uuid.uuid4()) # Generate a new thread ID if not provided
+        agent_response = agent.chat(request.message, thread_id=actual_thread_id)
         return ChatResponse(
             response=agent_response,
-            thread_id=thread_id,
+            thread_id=actual_thread_id,
             agent_type=request.agent_type
         )
-        
     except Exception as e:
-        if "API key" in str(e):
-            raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+        logger.error(f"Error in chat_with_agent: {e}")
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
-
-@app.post("/chat/new")
-async def start_new_conversation(agent_type: str = "rulebook"):
-    """Start a new conversation with a fresh thread"""
-    thread_id = str(uuid.uuid4())
-    return {
-        "thread_id": thread_id,
-        "agent_type": agent_type,
-        "message": f"New conversation started with {agent_type} agent"
-    }
 
 @app.get("/health")
 async def health_check():
@@ -135,7 +122,7 @@ async def health_check():
         "status": "healthy",
         "agents_loaded": list(active_agents.keys()),
         "environment": {
-            "langchain_api_key": bool(os.getenv("LANGCHAIN_API_KEY")),
+            "langsmith_api_key": bool(os.getenv("LANGSMITH_API_KEY")),
             "openai_api_key": bool(os.getenv("OPENAI_API_KEY"))
         }
     }
