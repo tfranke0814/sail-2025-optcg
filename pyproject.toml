@@ -7,4 +7,4 @@ name = "optcg-sail"
 version = "0.0.0"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"" = "python-src"}
