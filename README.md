@@ -38,11 +38,10 @@ Access at http://localhost:5173
 
 #### Backend Setup
 
-1. **Activate a virtual environment in the `backend/` directory:**
+1. **Activate a virtual environment in the root directory:**
 
    ```bash
    # Create a .venv
-   cd backend
    python -m venv .venv
    ```
 
@@ -55,11 +54,12 @@ Access at http://localhost:5173
    source .venv/bin/activate.bat
    ```
 
-3. **Install the Python package dependencies**
+3. **Install the Python package dependencies in the `backend/` directory:**
 
    ```bash
+   cd backend
    pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # Development tools
+   pip install -r backend/requirements-dev.txt  # Development tools
    ```
 
 4. **Copy the environment template:**
@@ -67,28 +67,31 @@ Access at http://localhost:5173
    cp example.env .env
    ```
 5. **Edit the `.env` in the `backend/` directory with your API keys.**
-6. **Run the backend API:**
+6. **Run the backend API from the `backend/` directory:**
 
    ```bash
-   # Run the API with auto-reload (from backend directory)
+   # Run the API with auto-reload
    uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
 
    # Or run directly
-   python src.optcg/api.py
+   cd backend && python src.optcg/api.py
    ```
 
 ### Frontend Setup
+
 ```bash
 cd frontend # from root directory
 npm install
 
 # Run development server
 npm run dev
-````
+```
+
 Access at http://localhost:5173
 
 ## More Information
-For more detailed Docker information see [DOCKER_README.md](DOCKER_README.md). For API documentation see [backend/README.md](backend/README.md) or the [FastAPI](http://localhost:8000/docs) (when running) 
+
+For more detailed Docker information see [DOCKER_README.md](DOCKER_README.md). For API documentation see [backend/README.md](backend/README.md) or the [FastAPI](http://localhost:8000/docs) (when running)
 
 ## Project Structure
 

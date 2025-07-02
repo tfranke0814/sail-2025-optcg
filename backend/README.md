@@ -4,29 +4,18 @@ The backend API for the OPTCG project, containing the endpoints for the agents.
 
 ## Setup and Runtime
 
-1. **Change the current directory to the `backend/` folder.**
-2. **Setup:**
+1. **Prerequisites:** Make sure you have set up the Python virtual environment and installed dependencies as described in the [main project README](../README.md).
+
+2. **Change the current directory to the `backend/` folder.**
+
+3. **Set up environment:**
 
    ```bash
-   # Create a new .venv (if you haven't) and activate it
-   python -m venv .venv
-   # On Windows:
-   .venv\Scripts\Activate.ps1
-   # On macOS/Linux:
-   source .venv/bin/activate.bat
-
-   # Install runtime dependencies
-   pip install -r requirements.txt
-
-   # Development runtime dependencies
-   # (Not needed to run API)
-   pip install -r requirements-dev.txt
-
-   # Set up environment
-   cp .env.example .env  # Add your API_KEYS
+   # Copy the environment template (if you haven't already)
+   cp example.env .env  # Add your API_KEYS
    ```
 
-3. **Running the API:**
+4. **Running the API:**
 
    ```bash
    # Development with auto-reload
