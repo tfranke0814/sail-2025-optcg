@@ -1,44 +1,56 @@
+# Backend API
 
+The backend API for the OPTCG project, containing the endpoints for the agents.
 
-## Project Structure
-- `python-src/` - Backend API and agent logic
-- `frontend/` - React frontend with Vite
+## Setup and Runtime
 
-## Backend API
-### Setup
-```bash
-# Install runtime dependencies
-pip install -r requirements.txt
+1. **Change the current directory to the `backend/` folder.**
+2. **Setup:**
 
-# Development runtime dependencies 
-# (Not needed to run API)
-pip install -r requirements-dev.txt
+   ```bash
+   # Create a new .venv (if you haven't) and activate it
+   python -m venv .venv
+   # On Windows:
+   .venv\Scripts\Activate.ps1
+   # On macOS/Linux:
+   source .venv/bin/activate.bat
 
-# Set up environment
-cp .env.example .env  # Add your API_KEYS
-```
+   # Install runtime dependencies
+   pip install -r requirements.txt
 
-### Running the API
-```bash
-# Development with auto-reload
-uvicorn python-src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+   # Development runtime dependencies
+   # (Not needed to run API)
+   pip install -r requirements-dev.txt
 
-# Or direct execution
-cd python-src
-python optcg/api.py
-```
+   # Set up environment
+   cp .env.example .env  # Add your API_KEYS
+   ```
+
+3. **Running the API:**
+
+   ```bash
+   # Development with auto-reload
+   uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+
+   # Or direct execution
+   \python src.optcg/api.py
+   ```
 
 ## API Endpoints
+
 - `GET /` - API status
-- `GET /agents` - Available agent types  
+- `GET /agents` - Available agent types
 - `POST /chat` - Chat with agents
 - `GET /health` - Health check
 
 ### Example Usage
+
 The `thread_id` parameter is optional and does not need to be specified.
 
-**Using curl:**
+#### **Curl Request:**
+
 Without specifying a thread id
+
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
@@ -46,6 +58,7 @@ curl -X POST http://localhost:8000/chat \
 ```
 
 Specifying a thread id
+
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
@@ -53,13 +66,15 @@ curl -X POST http://localhost:8000/chat \
 ```
 
 Windows PowerShell (if needed):
+
 ```powershell
 curl.exe -X POST http://localhost:8000/chat `
   -H "Content-Type: application/json" `
   -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook", "thread_id": "sample-thread-id"}'
 ```
 
-**Using Python requests:**
+#### **Python Requests:**
+
 ```python
 import requests
 response = requests.post(
@@ -73,16 +88,17 @@ response = requests.post(
 print(response.json())
 ```
 
-**Using JavaScript/Node.js:**
+#### **JavaScript/Node.js:**
+
 ```javascript
-const response = await fetch('http://localhost:8000/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        message: "What are the One Piece TCG rules?",
-        agent_type: "rulebook",
-        thread_id: "sample-thread-id"
-    })
+const response = await fetch("http://localhost:8000/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    message: "What are the One Piece TCG rules?",
+    agent_type: "rulebook",
+    thread_id: "sample-thread-id",
+  }),
 });
 const data = await response.json();
 console.log(data);

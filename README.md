@@ -1,219 +1,103 @@
 # sail-2025-optcg
+
 This is our repo for the N+1 SAIL Program through UW-Madison
 
-# Docker Setup for OPTCG Project
+An AI assistant for the One Piece Trading Card Game that helps players with rules, strategies, and (eventually) deck building.
 
-This document explains how to set up and run the OPTCG project using Docker.
+## Components
 
-## Prerequisites
+- [Backend API and Agents](backend/README.md)
+- [Frontend UI](frontend/README.md)
+
+## Quick Setup
+
+### Option 1: Docker Setup for OPTCG Project
+
+#### Prerequisites
 
 - Docker Desktop installed and running
 - Docker Compose (usually included with Docker Desktop)
 
-## Environment Setup
+#### Environment Setup and Runtime
 
 1. **Copy the environment template:**
    ```bash
+   # Copy environment template
    cp backend/example.env backend/.env
    ```
-
-2. **Edit the `backend/.env` file** and add your API keys:
+2. **Edit the `.env` in the `backend/` directory with your API keys.**
+3. **Start runtime:**
    ```bash
-   OPENAI_API_KEY="your-openai-api-key-here"
-   LANGSMITH_API_KEY="your-langsmith-api-key-here"
+   # Run in production mode
+   docker-compose up --build
    ```
 
-## Running the Application
+Access at http://localhost:5173
 
-### Production Mode
+### Option 2: Manual Setup
 
-To run the application in production mode:
+#### Backend Setup
 
-```bash
-# Build and start all services
-docker-compose up --build
+1. **Activate a virtual environment in the `backend/` directory:**
 
-# Or run in detached mode
-docker-compose up --build -d
-```
-
-**Access points:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
-
-### Development Mode
-
-To run the application in development mode with hot reloading:
-
-```bash
-# Build and start development services
-docker-compose -f docker-compose.dev.yml up --build
-
-# Or run in detached mode
-docker-compose -f docker-compose.dev.yml up --build -d
-```
-
-**Development features:**
-- Hot reloading for both frontend and backend
-- Source code mounted as volumes for live editing
-- Development dependencies included
-
-## Useful Commands
-
-### View logs
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-```
-
-### Stop services
-```bash
-# Production
-docker-compose down
-
-# Development
-docker-compose -f docker-compose.dev.yml down
-```
-
-### Rebuild services
-```bash
-# Production
-docker-compose up --build --force-recreate
-
-# Development
-docker-compose -f docker-compose.dev.yml up --build --force-recreate
-```
-
-### Access container shell
-```bash
-# Backend container
-docker-compose exec backend bash
-
-# Frontend container
-docker-compose exec frontend sh
-```
-
-### Clean up
-```bash
-# Remove containers, networks, and volumes
-docker-compose down -v
-
-# Remove all images
-docker-compose down --rmi all
-```
-
-## Service Architecture
-
-### Backend Service
-- **Image:** Python 3.11 slim
-- **Port:** 8000
-- **Health Check:** `/health` endpoint
-- **Features:** FastAPI with auto-reload in development
-
-### Frontend Service
-- **Image:** Node.js 18 (dev) / Nginx (prod)
-- **Port:** 3000
-- **Health Check:** HTTP 200 response
-- **Features:** React with Vite, hot reloading in development
-
-### Network
-- **Name:** `optcg-network` (prod) / `optcg-network-dev` (dev)
-- **Communication:** Frontend proxies API calls to backend
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Port already in use:**
    ```bash
-   # Check what's using the port
-   netstat -ano | findstr :8000
-   netstat -ano | findstr :3000
+   # Create a .venv
+   cd backend
+   python -m venv .venv
    ```
 
-2. **Environment variables not loading:**
-   - Ensure `backend/.env` file exists and has correct format
-   - Check for typos in variable names
+2. **Activate the virtual environment:**
 
-3. **Build failures:**
    ```bash
-   # Clean build cache
-   docker-compose build --no-cache
+   # On Windows:
+   .venv\Scripts\Activate.ps1
+   # On macOS/Linux:
+   source .venv/bin/activate.bat
    ```
 
-4. **Permission issues (Linux/Mac):**
+3. **Install the Python package dependencies**
+
    ```bash
-   # Fix file permissions
-   sudo chown -R $USER:$USER .
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt  # Development tools
    ```
 
-### Health Checks
+4. **Copy the environment template:**
+   ```bash
+   cp example.env .env
+   ```
+5. **Edit the `.env` in the `backend/` directory with your API keys.**
+6. **Run the backend API:**
 
-Monitor service health:
+   ```bash
+   # Run the API with auto-reload (from backend directory)
+   uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+
+   # Or run directly
+   python src.optcg/api.py
+   ```
+
+### Frontend Setup
 ```bash
-# Check service status
-docker-compose ps
+cd frontend # from root directory
+npm install
 
-# View health check logs
-docker inspect optcg-backend | grep -A 10 Health
-```
+# Run development server
+npm run dev
+````
+Access at http://localhost:5173
 
-## Development Workflow
+## More Information
+For more detailed Docker information see [DOCKER_README.md](DOCKER_README.md). For API documentation see [backend/README.md](backend/README.md) or the [FastAPI](http://localhost:8000/docs) (when running) 
 
-1. **Start development environment:**
-   ```bash
-   docker-compose -f docker-compose.dev.yml up --build
-   ```
-
-2. **Make code changes** in your local files
-   - Frontend changes will auto-reload
-   - Backend changes will auto-reload
-
-3. **Test API endpoints:**
-   ```bash
-   curl -X POST http://localhost:8000/chat \
-     -H "Content-Type: application/json" \
-     -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook"}'
-   ```
-
-4. **Stop development:**
-   ```bash
-   docker-compose -f docker-compose.dev.yml down
-   ```
-
-## Production Deployment
-
-For production deployment:
-
-1. **Remove development volumes** from `docker-compose.yml`
-2. **Set appropriate environment variables**
-3. **Use production Dockerfiles**
-4. **Configure reverse proxy** (nginx, traefik, etc.)
-5. **Set up SSL certificates**
-6. **Configure logging and monitoring**
-
-## File Structure
+## Project Structure
 
 ```
-├── backend/
-│   ├── Dockerfile.backend          # Backend production Dockerfile
-│   ├── requirements.txt            # Python dependencies
-│   ├── requirements-dev.txt        # Development dependencies
-│   └── example.env                 # Environment template
-├── frontend/
-│   ├── Dockerfile.frontend         # Frontend production Dockerfile
-│   ├── Dockerfile.frontend.dev     # Frontend development Dockerfile
-│   ├── package.json                # Node.js dependencies
-│   └── src/                        # React source code
-├── python-src/                     # Python backend source code
-├── docker-compose.yml              # Production compose file
-├── docker-compose.dev.yml          # Development compose file
-├── nginx.conf                      # Nginx configuration for frontend
-├── .dockerignore                   # Files to exclude from Docker builds
-└── DOCKER_README.md               # This file
-``` 
+sail-2025-optcg/
+├── backend/           # Python FastAPI backend
+│   └── src/           # Python source code
+├── frontend/          # React frontend
+└── DOCKER_README.md   # Docker setup instructions
+```
+
+For detailed file structure, see [DOCKER_README.md](DOCKER_README.md).
