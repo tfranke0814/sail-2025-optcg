@@ -1,23 +1,47 @@
 # region Imports
 from dotenv import load_dotenv
-from langchain_community.tools import BraveSearch
+from langchain_core.tools import tool
+from langchain_core.tools.retriever import create_retriever_tool
+from langchain_community.tools import BraveSearch, YouTubeSearchTool
 from langchain_tavily import TavilyExtract
 import json
-from langchain_core.tools import tool
 from typing import List
 import logging
 import ast
-from langchain_community.tools import YouTubeSearchTool
 
+
+# Custom Imports
+from optcg.vectorstore_logic import create_or_load_vectorstore_optcg_rulebooks
+
+
+## Available Tools
+# - create_rulebook_retriever_tool() -- (use as function call)
+# - web_search_tool
+# - youtube_search_tool
 
 # endregion Imports
+
+
+
+# region rulebook_retriever_tool
+def create_rulebook_retriever_tool():
+    # Ensure the vectorstore is created or loaded
+    vectorstore = create_or_load_vectorstore_optcg_rulebooks()
+    # Create the retriever tool
+    rulebook_retriever_tool = create_retriever_tool(
+    retriever=vectorstore.as_retriever(), # type: ignore
+    name="rulebooks_retriever",
+    description="""Retrieves relevant information from the One Piece TCG rulebooks. This tool is useful for answering questions about the rules of the game, such as how to play, game setup, keywords, and tournament rules. This is a retrieval tool that will return relevant document chunks from the vectorstore, which contains the rulebooks of the One Piece TCG."""
+    )
+    return rulebook_retriever_tool
+# endregion rulebook_retriever_tool
 
 
 
 # region web_search_tool
 @tool
 def web_search_tool(query: str) -> List[dict]:
-    """Tool that performs a web search and return the results from the webpages."""
+    """Tool that performs a web search and return the results from the webpages. This can be used to find information that is not in the rulebooks, such as news, updates, or general information about the One Piece TCG."""
     if not query.strip():
         logging.warning("web_search_tool - Agent queried an empty string. Query cannot be empty.")
         return [{"error": "Query cannot be empty"}]
