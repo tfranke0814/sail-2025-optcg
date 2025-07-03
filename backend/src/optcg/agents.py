@@ -33,7 +33,8 @@ from optcg.vectorstore_logic import create_or_load_vectorstore_optcg_rulebooks
 class BaseAgent(ABC):
     def __init__(self, model_name="gpt-4o-mini", temperature=0):
         self.model = ChatOpenAI(model=model_name, temperature=temperature)
-        self.name = "BaseAgent"
+        if not hasattr(self, 'name'): # Ensure name is set if not specified in subclasses
+            self.name = "NamelessAgent"
         self.memory = InMemorySaver()
         self.tools = self._setup_tools()
         self.prompt = self._create_prompt()
@@ -89,8 +90,8 @@ class BaseAgent(ABC):
 # region RulebookAgent Class
 class RulebookAgent(BaseAgent):
     def __init__(self, model_name="gpt-4.1"):
+        #self.name = "RulebookAgent"
         super().__init__(model_name=model_name, temperature=0)
-        self.name = "RulebookAgent"
     
     def _create_prompt(self):
         return "You are a helpful assistant that helps people find information in the Rulebook for One Piece TCG, otherwise abbreviated as optcg. You have access to the following tools: {tools}. Use them to find the information the user is looking for. If you don't know the answer, just say you don't know. Do not try to make up an answer. If you cannot find the answer in the rulebooks, tell the user that you cannot find the answer in the rulebooks."
