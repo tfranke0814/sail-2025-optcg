@@ -1,89 +1,106 @@
 # sail-2025-optcg
+
 This is our repo for the N+1 SAIL Program through UW-Madison
 
+An AI assistant for the One Piece Trading Card Game that helps players with rules, strategies, and (eventually) deck building.
+
+## Components
+
+- [Backend API and Agents](backend/README.md)
+- [Frontend UI](frontend/README.md)
+
+## Quick Setup
+
+### Option 1: Docker Setup for OPTCG Project
+
+#### Prerequisites
+
+- Docker Desktop installed and running
+- Docker Compose (usually included with Docker Desktop)
+
+#### Environment Setup and Runtime
+
+1. **Copy the environment template:**
+   ```bash
+   # Copy environment template
+   cp backend/example.env backend/.env
+   ```
+2. **Edit the `.env` in the `backend/` directory with your API keys.**
+3. **Start runtime:**
+   ```bash
+   # Run in production mode
+   docker-compose up --build
+   ```
+
+Access at http://localhost:5173
+
+### Option 2: Manual Setup
+
+#### Backend Setup
+
+1. **Activate a virtual environment in the root directory:**
+
+   ```bash
+   # Create a .venv
+   python -m venv .venv
+   ```
+
+2. **Activate the virtual environment:**
+
+   ```bash
+   # On Windows:
+   .venv\Scripts\Activate.ps1
+   # On macOS/Linux:
+   source .venv/bin/activate.bat
+   ```
+
+3. **Install the Python package dependencies in the `backend/` directory:**
+
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   pip install -r backend/requirements-dev.txt  # Development tools
+   ```
+
+4. **Copy the environment template:**
+   ```bash
+   cp example.env .env
+   ```
+5. **Edit the `.env` in the `backend/` directory with your API keys.**
+6. **Run the backend API from the `backend/` directory:**
+
+   ```bash
+   # Run the API with auto-reload
+   uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+
+   # Or run directly
+   cd backend && python src.optcg/api.py
+   ```
+
+### Frontend Setup
+
+```bash
+cd frontend # from root directory
+npm install
+
+# Run development server
+npm run dev
+```
+
+Access at http://localhost:5173
+
+## More Information
+
+For more detailed Docker information see [DOCKER_README.md](DOCKER_README.md). For API documentation see [backend/README.md](backend/README.md) or the [FastAPI](http://localhost:8000/docs) (when running)
+
 ## Project Structure
-- `python-src/` - Backend API and agent logic
-- `frontend/` - React frontend with Vite
 
-## Backend API
-### Setup
-```bash
-# Install runtime dependencies
-pip install -r requirements.txt
-
-# Development runtime dependencies (Not needed to run API)
-pip install -r requirements-dev.txt
-
-# Set up environment
-cp .env.example .env  # Add your OPENAI_API_KEY
+```
+sail-2025-optcg/
+├── backend/           # Python FastAPI backend
+│   └── src/           # Python source code
+├── frontend/          # React frontend
+└── DOCKER_README.md   # Docker setup instructions
 ```
 
-### Running the API
-```bash
-# Development with auto-reload
-uvicorn python-src.optcg.api:app --reload --host 127.0.0.1 --port 8000
-
-# Or direct execution
-cd python-src
-python optcg/api.py
-```
-
-## API Endpoints
-- `GET /` - API status
-- `GET /agents` - Available agent types  
-- `POST /chat` - Chat with agents
-- `GET /health` - Health check
-
-### Example Usage
-The `thread_id` parameter is optional and does not need to be specified.
-
-**Using curl:**
-Without specifying a thread id
-```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook"}'
-```
-
-Specifying a thread id
-```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook", "thread_id": "sample-thread-id"}'
-```
-
-Windows PowerShell (if needed):
-```powershell
-curl.exe -X POST http://localhost:8000/chat `
-  -H "Content-Type: application/json" `
-  -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook", "thread_id": "sample-thread-id"}'
-```
-
-**Using Python requests:**
-```python
-import requests
-response = requests.post(
-    "http://localhost:8000/chat",
-    json={
-        "message": "What are the One Piece TCG rules?",
-        "agent_type": "rulebook",
-        "thread_id": "sample-thread-id"
-    }
-)
-print(response.json())
-```
-
-**Using JavaScript/Node.js:**
-```javascript
-const response = await fetch('http://localhost:8000/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        message: "What are the One Piece TCG rules?",
-        agent_type: "rulebook",
-        thread_id: "sample-thread-id"
-    })
-});
-const data = await response.json();
-console.log(data);
-```
+For detailed file structure, see [DOCKER_README.md](DOCKER_README.md).
