@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
     """Lifespan event to validate environment on startup"""
     try:
         required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
+        # LangSmith is optional, not required for basic functionality
         for var in required_env_vars:
             if not os.getenv(var):
                 raise ValueError(f"{var} environment variable is required")
@@ -57,6 +58,7 @@ class ChatResponse(BaseModel):
     response: str
     thread_id: str
     agent_type: str
+
 
 # Store active agents - Won't persist across server restarts
 # -- Retains short-term memory threads for each agent
@@ -125,16 +127,27 @@ async def card_search():
 
 @app.get("/cards/{card_id}")
 async def get_card(card_id: str):
-    """Get details of a specific card by ID"""
+    """Get details of a specific card by ID from API TCG"""
     api_key = os.getenv("APITCG_API_KEY")
     url = f"https://apitcg.com/api/one-piece/cards/{card_id}"
     headers = {"x-api-key": api_key}
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        logger.error(f"Card not found: {card_id}, status code: {response.status_code}")
-        raise HTTPException(status_code=response.status_code, detail="Card not found")
+    try:
+        logger.debug(f"Fetching card {card_id} from {url}")
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            logger.error(f"Card not found: {card_id}, status code: {response.status_code}")
+            raise HTTPException(status_code=response.status_code, detail=f"Error fetching card data: {response.status_code}")
+        data = response.json()
+        if data.get("error"):
+            logger.error(f"API TCG returned error for card {card_id}: {data['error']}")
+            raise HTTPException(status_code=404, detail=f"Error fetching card data: {data['error']}")
+        if not data.get("data"):
+            logger.error(f"API TCG called and card not found (empty data): {card_id}")
+            raise HTTPException(status_code=404, detail="Card not found")
+        return data
+    except requests.RequestException as e:
+        logger.exception(f"Error contacting API TCG: {e}")
+        raise HTTPException(status_code=502, detail="Error contacting API TCG")
 
 @app.get("/health")
 async def health_check():
