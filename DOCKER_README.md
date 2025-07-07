@@ -201,25 +201,25 @@ For production deployment:
 ```
 sail-2025-optcg/
 ├── backend/
-│   ├── Dockerfile.backend          # Backend production Dockerfile
-│   ├── requirements.txt            # Python dependencies
-│   ├── requirements-dev.txt        # Development dependencies
-│   ├── example.env                 # Environment template
-│   └── src/                        # Python source code
-│       └── optcg/                  # Main package
-│           ├── api.py              # FastAPI application
-│           ├── agents.py           # LLM agents implementation
+│   ├── Dockerfile.backend           # Backend production Dockerfile
+│   ├── requirements.txt             # Python dependencies
+│   ├── requirements-dev.txt         # Development dependencies
+│   ├── example.env                  # Environment template
+│   └── src/                         # Python source code
+│       └── optcg/                   # Main package
+│           ├── api.py               # FastAPI application
+│           ├── agents.py            # LLM agents implementation
 │           ├── vectorstore_logic.py # Vector database handling
-│           └── tools/              # Agent tools directory
+│           └── tools.py/            # Agent tools directory
 ├── frontend/
-│   ├── Dockerfile.frontend         # Frontend production Dockerfile
-│   ├── Dockerfile.frontend.dev     # Frontend development Dockerfile
-│   ├── package.json                # Node.js dependencies
-│   └── src/                        # React source code
-├── docker-compose.yml              # Production compose file
-├── docker-compose.dev.yml          # Development compose file
-├── nginx.conf                      # Nginx configuration for frontend
-├── .dockerignore                   # Files to exclude from Docker builds
-├── README.md                       # Main project documentation
-└── DOCKER_README.md                # Docker-specific documentation
+│   ├── Dockerfile.frontend          # Frontend production Dockerfile
+│   ├── Dockerfile.frontend.dev      # Frontend development Dockerfile
+│   ├── package.json                 # Node.js dependencies
+│   └── src/                         # React source code
+├── docker-compose.yml               # Production compose file
+├── docker-compose.dev.yml           # Development compose file
+├── nginx.conf                       # Nginx configuration for frontend
+├── .dockerignore                    # Files to exclude from Docker builds
+├── README.md                        # Main project documentation
+└── DOCKER_README.md                 # Docker-specific documentation
 ```

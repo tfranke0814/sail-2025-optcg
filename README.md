@@ -59,7 +59,7 @@ Access at http://localhost:5173
    ```bash
    cd backend
    pip install -r requirements.txt
-   pip install -r backend/requirements-dev.txt  # Development tools
+   pip install -r requirements-dev.txt  # Development tools
    ```
 
 4. **Copy the environment template:**
@@ -71,21 +71,22 @@ Access at http://localhost:5173
 
    ```bash
    # Run the API with auto-reload
-   uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+   uvicorn optcg.api:app --reload --host 127.0.0.1 --port 8000
 
    # Or run directly
-   cd backend && python src.optcg/api.py
+   python src.optcg/api.py
    ```
 
-### Frontend Setup
+#### Frontend Setup
+1. **Open another terminal instance with the backend still running in the first one.**
+2. **Change to the `frontend/` directory, install the package requirements, and run the server:**
+   ```bash
+   cd frontend # from root directory
+   npm install
 
-```bash
-cd frontend # from root directory
-npm install
-
-# Run development server
-npm run dev
-```
+   # Run development server
+   npm run dev
+   ```
 
 Access at http://localhost:5173
 

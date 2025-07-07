@@ -19,7 +19,7 @@ The backend API for the OPTCG project, containing the endpoints for the agents.
 
    ```bash
    # Development with auto-reload
-   uvicorn src.optcg.api:app --reload --host 127.0.0.1 --port 8000
+   uvicorn optcg.api:app --reload --host 127.0.0.1 --port 8000
 
    # Or direct execution
    \python src.optcg/api.py
