@@ -7,6 +7,7 @@ import os
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
+import requests
 
 # Import Agents
 from optcg.agents import RulebookAgent
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan event to validate environment on startup"""
     try:
-        required_env_vars = ["OPENAI_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
+        required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
         for var in required_env_vars:
             if not os.getenv(var):
                 raise ValueError(f"{var} environment variable is required")
@@ -78,8 +79,8 @@ def get_or_create_agent(agent_type: str):
 async def root():
     """API status endpoint"""
     return {
-        "status": "OPTCG Agent API is running",
-        "version": "1.0.0",
+        "status": f"{app.title} is running",
+        "version": app.version,
         "docs": "/docs",
         "endpoints": {
             "GET /agents": "List available agent types",
@@ -116,6 +117,24 @@ async def chat_with_agent(request: ChatRequest):
     except Exception as e:
         logger.error(f"Error in API <chat_with_agent>: {e}")
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
+    
+@app.post("/cards")
+async def card_search():
+    """"Search for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
+    pass  # Placeholder for card search implementation
+
+@app.get("/cards/{card_id}")
+async def get_card(card_id: str):
+    """Get details of a specific card by ID"""
+    api_key = os.getenv("APITCG_API_KEY")
+    url = f"https://apitcg.com/api/one-piece/cards/{card_id}"
+    headers = {"x-api-key": api_key}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logger.error(f"Card not found: {card_id}, status code: {response.status_code}")
+        raise HTTPException(status_code=response.status_code, detail="Card not found")
 
 @app.get("/health")
 async def health_check():
@@ -126,6 +145,7 @@ async def health_check():
         "environment": {
             "langsmith_api_key": bool(os.getenv("LANGSMITH_API_KEY")),
             "openai_api_key": bool(os.getenv("OPENAI_API_KEY")), 
+            "apitcg_api_key": bool(os.getenv("APITCG_API_KEY")),
             "brave_search_api_key": bool(os.getenv("BRAVE_SEARCH_API_KEY")),
             "tavily_api_key": bool(os.getenv("TAVILY_API_KEY"))
         }
