@@ -10,15 +10,27 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+<<<<<<< HEAD
+=======
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY}
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
       - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
       - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
       - LANGSMITH_ENDPOINT=${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
       - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-optcg-sail}
     env_file:
+<<<<<<< HEAD
       - ./backend/example.env
     volumes:
       # Mount source code for development (comment out for production)
       - ./python-src:/app/python-src
+=======
+      - ./backend/.env
+    volumes:
+      # Mount source code for development (comment out for production)
+      - ./backend/src:/app/src
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

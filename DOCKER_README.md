@@ -16,8 +16,15 @@ This document explains how to set up and run the OPTCG project using Docker.
 
 2. **Edit the `backend/.env` file** and add your API keys:
    ```bash
+<<<<<<< HEAD
    OPENAI_API_KEY="your-openai-api-key-here"
    LANGSMITH_API_KEY="your-langsmith-api-key-here"
+=======
+   OPENAI_API_KEY="your-openai-api-key"
+   BRAVE_SEARCH_API_KEY="your-brave-search-api-key"
+   TAVILY_API_KEY="your-tavily-api-key"
+   LANGSMITH_API_KEY="your-langsmith-api-key"
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
    ```
 
 ## Running the Application
@@ -197,20 +204,43 @@ For production deployment:
 ## File Structure
 
 ```
+<<<<<<< HEAD
+=======
+sail-2025-optcg/
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
 ├── backend/
 │   ├── Dockerfile.backend          # Backend production Dockerfile
 │   ├── requirements.txt            # Python dependencies
 │   ├── requirements-dev.txt        # Development dependencies
+<<<<<<< HEAD
 │   └── example.env                 # Environment template
+=======
+│   ├── example.env                 # Environment template
+│   └── src/                        # Python source code
+│       └── optcg/                  # Main package
+│           ├── api.py              # FastAPI application
+│           ├── agents.py           # LLM agents implementation
+│           ├── vectorstore_logic.py # Vector database handling
+│           └── tools/              # Agent tools directory
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
 ├── frontend/
 │   ├── Dockerfile.frontend         # Frontend production Dockerfile
 │   ├── Dockerfile.frontend.dev     # Frontend development Dockerfile
 │   ├── package.json                # Node.js dependencies
 │   └── src/                        # React source code
+<<<<<<< HEAD
 ├── python-src/                     # Python backend source code
+=======
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
 ├── docker-compose.yml              # Production compose file
 ├── docker-compose.dev.yml          # Development compose file
 ├── nginx.conf                      # Nginx configuration for frontend
 ├── .dockerignore                   # Files to exclude from Docker builds
+<<<<<<< HEAD
 └── DOCKER_README.md               # This file
 ``` 
+=======
+├── README.md                       # Main project documentation
+└── DOCKER_README.md                # Docker-specific documentation
+```
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0

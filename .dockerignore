@@ -36,6 +36,11 @@ coverage.xml
 .mypy_cache
 .pytest_cache
 .hypothesis
+<<<<<<< HEAD
+=======
+.env
+.venv
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
 
 # Jupyter notebooks
 *.ipynb

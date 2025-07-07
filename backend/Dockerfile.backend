@@ -19,7 +19,11 @@ COPY backend/requirements-dev.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Python source code
+<<<<<<< HEAD
 COPY python-src/ ./python-src/
+=======
+COPY backend/src/ ./src/
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
 
 # Copy environment file template
 COPY backend/example.env .env
@@ -32,4 +36,8 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
+<<<<<<< HEAD
 CMD ["uvicorn", "python-src.optcg.api:app", "--host", "0.0.0.0", "--port", "8000"] 
+=======
+CMD ["uvicorn", "src.optcg.api:app", "--host", "0.0.0.0", "--port", "8000"] 
+>>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
