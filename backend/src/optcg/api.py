@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 import uuid
 import os
 from contextlib import asynccontextmanager
@@ -58,6 +58,19 @@ class ChatResponse(BaseModel):
     response: str
     thread_id: str
     agent_type: str
+
+class CardSearchRequest(BaseModel):
+    query: str = "" # Query by name of a card
+    set: Optional[str] = None # Set code, e.g. "OP01"
+    # rarity: Optional[str] = None # "C" returns both "C", "UC", and "SEC"... similarly with "R"
+    type: Optional[str] = None
+    cost: Optional[int] = None
+    power: Optional[int] = None
+    counter: Optional[str] = None # Counter value, e.g. "1000" or "-" for no counter
+    color: Optional[str] = None
+    family: Optional[str] = None
+    ability: Optional[str] = None
+    trigger: Optional[str] = None
 
 
 # Store active agents - Won't persist across server restarts
@@ -121,8 +134,8 @@ async def chat_with_agent(request: ChatRequest):
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
     
 @app.post("/cards")
-async def card_search():
-    """"Search for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
+async def card_search(request: CardSearchRequest):
+    """Search for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
     pass  # Placeholder for card search implementation
 
 @app.get("/cards/{card_id}")
