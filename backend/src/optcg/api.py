@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan event to validate environment on startup"""
     try:
-        required_env_vars = ["OPENAI_API_KEY"]
+        required_env_vars = ["OPENAI_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
         for var in required_env_vars:
             if not os.getenv(var):
                 raise ValueError(f"{var} environment variable is required")
@@ -69,6 +69,7 @@ def get_or_create_agent(agent_type: str):
         if agent_type == "rulebook":
             active_agents[agent_type] = RulebookAgent()
         else:
+            logger.error(f"Unknown agent type requested: {agent_type}")
             raise HTTPException(status_code=400, detail=f"Unknown agent type: {agent_type}")
     
     return active_agents[agent_type]
@@ -113,7 +114,7 @@ async def chat_with_agent(request: ChatRequest):
             agent_type=request.agent_type
         )
     except Exception as e:
-        logger.error(f"Error in chat_with_agent: {e}")
+        logger.error(f"Error in API <chat_with_agent>: {e}")
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 @app.get("/health")
@@ -124,7 +125,9 @@ async def health_check():
         "agents_loaded": list(active_agents.keys()),
         "environment": {
             "langsmith_api_key": bool(os.getenv("LANGSMITH_API_KEY")),
-            "openai_api_key": bool(os.getenv("OPENAI_API_KEY"))
+            "openai_api_key": bool(os.getenv("OPENAI_API_KEY")), 
+            "brave_search_api_key": bool(os.getenv("BRAVE_SEARCH_API_KEY")),
+            "tavily_api_key": bool(os.getenv("TAVILY_API_KEY"))
         }
     }
 
