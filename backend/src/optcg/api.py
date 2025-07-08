@@ -147,7 +147,7 @@ async def card_search(request: CardSearchRequest):
     if request.query:
         params["name"] = request.query
     if request.set:
-        params["set"] = request.set
+        params["code"] = request.set
     if request.type:
         params["type"] = request.type
     if request.cost is not None: # Allows for cost to be 0
