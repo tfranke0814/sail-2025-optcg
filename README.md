@@ -6,7 +6,7 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
 
 ## Components
 
-- [Backend API and Agents](backend/README.md)
+- [Backend API](backend/README.md)
 - [Frontend UI](frontend/README.md)
 
 ## Quick Setup
