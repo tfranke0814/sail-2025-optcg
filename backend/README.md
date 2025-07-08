@@ -138,7 +138,7 @@ Toi explicitly search for cards without a `counter` to "-".
 ```bash
 curl -X POST http://localhost:8000/cards \
   -H "Content-Type: application/json" \
-  -d '{"name": "Luffy", "power": 2000, "family": "Supernovas"}'
+  -d '{"query": "Luffy", "power": 2000, "family": "Supernovas"}'
 ```
 
 Windows PowerShell (if needed):
@@ -146,5 +146,5 @@ Windows PowerShell (if needed):
 ```powershell
 curl.exe -X POST http://localhost:8000/cards `
   -H "Content-Type: application/json" `
-  -d '{"name": "Luffy", "power": 2000, "family": "Supernovas"}'
+  -d '{"query": "Luffy", "power": 2000, "family": "Supernovas"}'
 ```
