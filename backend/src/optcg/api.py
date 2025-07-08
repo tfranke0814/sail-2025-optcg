@@ -60,7 +60,7 @@ class ChatResponse(BaseModel):
     agent_type: str
 
 class CardSearchRequest(BaseModel):
-    query: str = "" # Query by name of a card
+    query: Optional[str] = None # Query by name of a card
     set: Optional[str] = None # Set code, e.g. "OP01"
     # rarity: Optional[str] = None # "C" returns both "C", "UC", and "SEC"... similarly with "R"
     type: Optional[str] = None
@@ -136,7 +136,50 @@ async def chat_with_agent(request: ChatRequest):
 @app.post("/cards")
 async def card_search(request: CardSearchRequest):
     """Search for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
-    pass  # Placeholder for card search implementation
+    api_key = os.getenv("APITCG_API_KEY")
+    url = "https://apitcg.com/api/one-piece/cards/"
+    headers = {"x-api-key": api_key}
+    
+    # Build query parameters, filtering out None values
+    params = {}
+    if request.query:
+        params["name"] = request.query
+    if request.set:
+        params["set"] = request.set
+    if request.type:
+        params["type"] = request.type
+    if request.cost is not None: # Allows for cost to be 0
+        params["cost"] = request.cost
+    if request.power is not None: # Allows for power to be 0
+        params["power"] = request.power
+    if request.counter:
+        params["counter"] = request.counter
+    if request.color:
+        params["color"] = request.color
+    if request.family:
+        params["family"] = request.family
+    if request.ability:
+        params["ability"] = request.ability
+    if request.trigger:
+        params["trigger"] = request.trigger
+    
+    try:
+        logger.debug(f"Searching cards with params: {params}")
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            logger.error(f"Card search failed with status code: {response.status_code}")
+            raise HTTPException(status_code=response.status_code, detail=f"Error searching cards: {response.status_code}")
+        data = response.json()
+        if data.get("error"):
+            logger.error(f"API TCG returned error for card search: {data['error']}")
+            raise HTTPException(status_code=400, detail=f"Error searching cards: {data['error']}")
+        if not data.get("data"):
+            logger.error("API TCG called but no cards found (empty data)")
+            raise HTTPException(status_code=404, detail="No cards found matching the search criteria")
+        return data
+    except requests.RequestException as e:
+        logger.exception(f"Error contacting API TCG: {e}")
+        raise HTTPException(status_code=502, detail="Error contacting API TCG")
 
 @app.get("/cards/{card_id}")
 async def get_card(card_id: str):
@@ -144,6 +187,7 @@ async def get_card(card_id: str):
     api_key = os.getenv("APITCG_API_KEY")
     url = f"https://apitcg.com/api/one-piece/cards/{card_id}"
     headers = {"x-api-key": api_key}
+
     try:
         logger.debug(f"Fetching card {card_id} from {url}")
         response = requests.get(url, headers=headers)
