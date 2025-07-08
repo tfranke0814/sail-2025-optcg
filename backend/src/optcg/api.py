@@ -100,6 +100,8 @@ async def root():
         "endpoints": {
             "GET /agents": "List available agent types",
             "POST /chat": "Chat with agents", 
+            "POST /cards": "Search for cards in the One Piece TCG database",
+            "GET /cards/{card_id}": "Get details of a specific card by ID",
             "GET /health": "Health check"
         }
     }
