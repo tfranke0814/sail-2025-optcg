@@ -8,11 +8,11 @@ import json
 from typing import List
 import logging
 import ast
-
+import requests
 
 # Custom Imports
 from optcg.vectorstore_logic import create_or_load_vectorstore_optcg_rulebooks
-
+from optcg.models import CardSearchRequest
 
 ## Available Tools
 # - create_rulebook_retriever_tool() -- (use as function call)
@@ -98,3 +98,20 @@ def youtube_search_tool(query: str) -> List[dict]:
         logging.exception(f"Exception in web_search_tool: {str(e)}")
         return [{"error": str(e)}]
 # endregion youtube_search_tool
+
+
+
+# # region card_search_tool
+@tool
+def card_search_tool(input: CardSearchRequest) -> List[dict]:
+    """Tool that searches for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
+    try:
+        response = requests.post(
+            "http://localhost:8000/cards",
+            json=input.model_dump(exclude_none=True) 
+        )
+    except requests.RequestException as e:
+        logging.exception(f"Exception in card_search_tool: {str(e)}")
+        return [{"error": str(e)}]
+    return response.json().get("data", [])
+# # endregion card_search_tool
