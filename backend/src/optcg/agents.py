@@ -11,7 +11,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langsmith import traceable
 
 # Custom Imports
-from optcg.tools import create_rulebook_retriever_tool, web_search_tool, youtube_search_tool
+from optcg.tools import create_rulebook_retriever_tool, web_search_tool, youtube_search_tool, card_search_tool
 
 
 ## This file defines the base agent class for the optcg project.
@@ -238,3 +238,23 @@ class SearchAgent_youtube_rulebook(BaseAgent):
             create_rulebook_retriever_tool()
         ]
 # endregion SearchAgent Class
+
+
+
+# region CardSearchAgent Class
+class CardDBToolAgent(BaseAgent):
+    # If model and temperature are not specified, defaults will be used, defined in BaseAgent.
+    def __init__(self, model_name="gpt-4.1"):
+        self.name = "CardDBToolAgent"
+        super().__init__(model_name=model_name, temperature=0)
+    
+    def _create_prompt(self):
+        """Create a system prompt for the agent. This should be tailored to the specific agent's purpose."""
+        return "You are a helpful assistant that helps people answer information about the One Piece TCG. If you don't know the answer, just say you don't know. Do not try to make up an answer."
+
+    def _setup_tools(self):
+        """Setup tools for this agent. This can include any tools you want to use, or be an empty list if no tools are needed."""
+        return [
+            card_search_tool
+        ]
+# endregion CardSearchAgent Class
