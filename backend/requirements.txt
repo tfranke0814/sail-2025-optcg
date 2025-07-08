@@ -150,3 +150,18 @@ zipp==3.23.0
 zstandard==0.23.0
 dotenv==0.9.9
 youtube-search==2.1.2
+# --- Notebook and agent_eval.ipynb dependencies (added for Docker compatibility) ---
+python-dotenv
+ipython
+ipykernel
+notebook
+openai
+langchain
+langchain-openai
+langchain-core
+langchain-community
+langchain-tavily
+langgraph
+langgraph-prebuilt
+langsmith
+matplotlib

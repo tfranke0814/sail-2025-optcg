@@ -9,6 +9,7 @@ COPY frontend/package*.json ./
 
 # Install dependencies
 RUN npm ci
+RUN npm install react react-dom @types/react @types/react-dom
 
 # Copy source code
 COPY frontend/ .
