@@ -18,6 +18,7 @@ from optcg.models import CardSearchRequest
 # - create_rulebook_retriever_tool() -- (use as function call)
 # - web_search_tool
 # - youtube_search_tool
+# - card_search_tool
 
 # endregion Imports
 
