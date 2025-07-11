@@ -1,8 +1,3 @@
 -e .
 ipykernel==6.29.5
-<<<<<<< HEAD
-jupyter_client==8.6.3
-jupyter_core==5.8.1
-=======
 notebook==7.0.0
->>>>>>> b82699c435d95196118ee61eb80d37f88aa419d0
