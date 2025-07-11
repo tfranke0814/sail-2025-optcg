@@ -13,33 +13,26 @@ const powerOptions = [0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,11000
 const counterOptions = [0,1000,2000];
 const rarityOptions = ['L','C','UC','R','SR','SEC','P'];
 
+// Update FilterState to use single values
 export type FilterState = {
-  set: string[];
-  type: string[];
-  color: string[];
-  cost: (string | number)[];
-  power: number[];
-  counter: number[];
-  rarity: string[];
+  set: string;
+  type: string;
+  color: string;
+  cost: string | number;
+  power: string | number;
+  counter: string | number;
+  rarity: string;
 };
 
-type MultiSelectProps = {
-  label: string;
-  options: (string | number)[];
-  value: (string | number)[];
-  onChange: (event: SelectChangeEvent<(string | number)[]>) => void;
-};
-
-function MultiSelect({ label, options, value, onChange }: MultiSelectProps) {
+// SingleSelect component for single-value select
+function SingleSelect({ label, options, value, onChange }: { label: string, options: (string | number)[], value: string | number, onChange: (event: SelectChangeEvent<string | number>) => void }) {
   return (
     <FormControl sx={{ m: 0.5, minWidth: 120, maxWidth: 180 }} size="small">
       <InputLabel>{label}</InputLabel>
       <Select
-        multiple
         value={value}
         onChange={onChange}
         input={<OutlinedInput label={label} />}
-        renderValue={(selected) => (selected as (string | number)[]).join(', ')}
         MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
         sx={{
           backgroundColor: '#fff',
@@ -49,11 +42,9 @@ function MultiSelect({ label, options, value, onChange }: MultiSelectProps) {
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3578e6' },
         }}
       >
+        <MenuItem value="">(Any)</MenuItem>
         {options.map((opt) => (
-          <MenuItem key={opt} value={opt}>
-            <Checkbox checked={value.indexOf(opt) > -1} />
-            <ListItemText primary={opt} />
-          </MenuItem>
+          <MenuItem key={opt} value={opt}>{opt}</MenuItem>
         ))}
       </Select>
     </FormControl>
@@ -70,25 +61,25 @@ const CardFilterBar: React.FC<CardFilterBarProps> = ({ filters, setFilters }) =>
     <Box sx={{ background: 'transparent', p: 1 }}>
       <Grid container spacing={1}>
         <Grid item>
-          <MultiSelect label="Set" options={setOptions} value={filters.set} onChange={(e) => setFilters(f => ({...f, set: e.target.value as string[]}))} />
+          <SingleSelect label="Set" options={setOptions} value={filters.set} onChange={e => setFilters(f => ({ ...f, set: e.target.value as string }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Type" options={typeOptions} value={filters.type} onChange={(e) => setFilters(f => ({...f, type: e.target.value as string[]}))} />
+          <SingleSelect label="Type" options={typeOptions} value={filters.type} onChange={e => setFilters(f => ({ ...f, type: e.target.value as string }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Color" options={colorOptions} value={filters.color} onChange={(e) => setFilters(f => ({...f, color: e.target.value as string[]}))} />
+          <SingleSelect label="Color" options={colorOptions} value={filters.color} onChange={e => setFilters(f => ({ ...f, color: e.target.value as string }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Cost" options={costOptions} value={filters.cost} onChange={(e) => setFilters(f => ({...f, cost: e.target.value as (string | number)[]}))} />
+          <SingleSelect label="Cost" options={costOptions} value={filters.cost} onChange={e => setFilters(f => ({ ...f, cost: e.target.value }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Power" options={powerOptions} value={filters.power} onChange={(e) => setFilters(f => ({...f, power: e.target.value as number[]}))} />
+          <SingleSelect label="Power" options={powerOptions} value={filters.power} onChange={e => setFilters(f => ({ ...f, power: e.target.value }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Counter" options={counterOptions} value={filters.counter} onChange={(e) => setFilters(f => ({...f, counter: e.target.value as number[]}))} />
+          <SingleSelect label="Counter" options={counterOptions} value={filters.counter} onChange={e => setFilters(f => ({ ...f, counter: e.target.value }))} />
         </Grid>
         <Grid item>
-          <MultiSelect label="Rarity" options={rarityOptions} value={filters.rarity} onChange={(e) => setFilters(f => ({...f, rarity: e.target.value as string[]}))} />
+          <SingleSelect label="Rarity" options={rarityOptions} value={filters.rarity} onChange={e => setFilters(f => ({ ...f, rarity: e.target.value as string }))} />
         </Grid>
       </Grid>
     </Box>
