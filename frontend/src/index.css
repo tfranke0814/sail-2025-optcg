@@ -297,3 +297,11 @@ body {
     background-color: #222;
     border: 3px solid #555;
 }
+
+/* Chat Widget Styles */
+.chat-widget {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+}
