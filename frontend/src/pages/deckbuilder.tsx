@@ -40,12 +40,29 @@ const CardSidebar = () => {
         // rarity is not supported by backend, so skip
         // To explicitly search for cards without a counter, set counter to '-'
         if (filters.counter === '-') body.counter = '-';
+
+        // If body is still empty, send {query: ""} to avoid backend 400
+        if (Object.keys(body).length === 0) {
+          setError("Please enter a search term or select at least one filter.");
+          setLoading(false);
+          return;
+        }
+
         try {
-            const res = await fetch('/cards', {
+            console.log(body);
+            body.query = "";
+            console.log('http://localhost:8000/cards/');
+            const res = await fetch('http://localhost:8000/cards', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+            if (res.status === 404) {
+                setResults([]);
+                setError(null);
+                setLoading(false);
+                return;
+            }
             if (!res.ok) throw new Error(`API error: ${res.status}`);
             const data = await res.json();
             setResults(data.data || []);
@@ -73,22 +90,22 @@ const CardSidebar = () => {
                     <button className="sidebar-btn search-btn" onClick={handleSearch} disabled={loading}>Search</button>
                 </div>
                 <div className="filter-row" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                  <input type="text" placeholder="Family" value={family} onChange={e => setFamily(e.target.value)} style={{ flex: 1, borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
-                  <input type="text" placeholder="Ability" value={ability} onChange={e => setAbility(e.target.value)} style={{ flex: 1, borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
-                  <input type="text" placeholder="Trigger" value={trigger} onChange={e => setTrigger(e.target.value)} style={{ flex: 1, borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
+                  <input type="text" placeholder="Family" value={family} onChange={e => setFamily(e.target.value)} style={{ width: '30%', borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
+                  <input type="text" placeholder="Ability" value={ability} onChange={e => setAbility(e.target.value)} style={{ width: '30%', borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
+                  <input type="text" placeholder="Trigger" value={trigger} onChange={e => setTrigger(e.target.value)} style={{ width: '30%', borderRadius: 6, border: '1px solid #555', background: '#333', color: '#fff', padding: '8px 10px', fontSize: 15 }} />
                 </div>
             </div>
             <CardFilterBar filters={filters} setFilters={setFilters} />
-            <div className="card-list-display">
+            <div className="card-list-display" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 24 }}>
                 {loading && <div style={{ color: '#aaa', textAlign: 'center', marginTop: 20 }}>Loading...</div>}
-                {error && <div style={{ color: '#e66', textAlign: 'center', marginTop: 20 }}>{error}</div>}
+                {error && error !== 'No results' && <div style={{ color: '#e66', textAlign: 'center', marginTop: 20 }}>{error}</div>}
                 {!loading && !error && results.length === 0 && <div className="card-placeholder">No results</div>}
                 {!loading && !error && results.map((card, i) => (
-                  <div key={card.id || i} className="card-placeholder" style={{ background: '#222', color: '#fff', padding: 8, minHeight: 120, border: '1px solid #444', borderRadius: 8, marginBottom: 8 }}>
-                    <div style={{ fontWeight: 600 }}>{card.name}</div>
-                    <div style={{ fontSize: 13, color: '#aaa' }}>{card.type} | {card.set} | Cost: {card.cost} | Power: {card.power} | Counter: {card.counter} | Color: {card.color} | Family: {card.family} | Ability: {card.ability} | Trigger: {card.trigger}</div>
-                    {card.images && card.images.small && <img src={card.images.small} alt={card.name} style={{ width: 60, marginTop: 6, borderRadius: 4 }} />}
-                  </div>
+                  card.images && card.images.small ? (
+                    <div key={card.id || i} className="card-image-cell" style={{ background: '#222', border: '1px solid #444', borderRadius: 12, padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 240 }}>
+                      <img src={card.images.small} alt={card.name} style={{ width: '100%', height: 'auto', borderRadius: 8, boxShadow: '0 2px 8px #0006' }} />
+                    </div>
+                  ) : null
                 ))}
             </div>
         </div>
@@ -199,13 +216,26 @@ const GameBoard = () => {
         {/* LIFE - CHARACTER - LIFE row */}
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           {/* Left LIFE with + - group */}
-          <div className="side-area life-area-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 8, marginRight: 10 }}>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 6, marginBottom: 8 }}>
-              <button style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>+</button>
-              <button style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>-</button>
+          <div className="side-area life-area-left" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            background: 'rgba(30,30,30,0.38)',
+            borderRadius: 12,
+            padding: 4,
+            marginRight: 10,
+            justifyContent: 'flex-start',
+            marginTop: 0,
+            marginBottom: 0,
+            // No transform, align perfectly with Character grid top
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 4, marginBottom: 4 }}>
+              <button style={{ borderRadius: '50%', width: 20, height: 20, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 13 }}>+</button>
+              <button style={{ borderRadius: '50%', width: 20, height: 20, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 13 }}>-</button>
             </div>
+            {/* Life slots: scale down ~10% and use tight margin to fit exactly 5 slots */}
             {Array(5).fill(0).map((_, i) => (
-              <div key={i} className="card-slot life-slot">LIFE</div>
+              <div key={i} className="card-slot life-slot" style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }}>LIFE</div>
             ))}
           </div>
           {/* Center CHARACTER grid */}
@@ -215,14 +245,27 @@ const GameBoard = () => {
             ))}
           </div>
           {/* Right LIFE with + - group */}
-          <div className="side-area life-area-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 8, marginLeft: 10 }}>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 6, marginBottom: 8 }}>
-              <button style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>+</button>
-              <button style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>-</button>
+          <div className="side-area life-area-right" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            background: 'rgba(30,30,30,0.38)',
+            borderRadius: 12,
+            padding: 4,
+            marginLeft: 10,
+            justifyContent: 'flex-end',
+            marginTop: 0,
+            marginBottom: 0,
+            // No transform, align perfectly with Character grid bottom
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 4, marginBottom: 4 }}>
+              <button style={{ borderRadius: '50%', width: 20, height: 20, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 13 }}>+</button>
+              <button style={{ borderRadius: '50%', width: 20, height: 20, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 13 }}>-</button>
             </div>
+            {/* Life slots: scale down ~10% and use tight margin to fit exactly 5 slots */}
             {Array(5).fill(0).map((_, i) => (
-              <div key={i} className="card-slot life-slot">LIFE</div>
-            ))}
+              <div key={i} className="card-slot life-slot" style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }}>LIFE</div>
+            )).reverse()}
           </div>
         </div>
         {/* Bottom EVENT - LEADER - STAGE row */}
@@ -273,7 +316,7 @@ const ChatWidget: React.FC = () => {
     try {
       const body: any = { message: input, agent_type: 'rulebook' };
       if (threadId) body.thread_id = threadId;
-      const res = await fetch('/chat', {
+      const res = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -304,10 +347,16 @@ const ChatWidget: React.FC = () => {
                   background: msg.role === 'user' ? '#3578e6' : '#444',
                   color: '#fff',
                   borderRadius: 8,
-                  padding: '6px 12px',
+                  padding: msg.role === 'user' ? '6px 4px 6px 8px' : '6px 12px', // Less left padding for user
                   maxWidth: '80%',
                   wordBreak: 'break-word',
-                  fontSize: 15
+                  fontSize: 15,
+                  marginLeft: 0,
+                  marginRight: 0,
+                  borderTopLeftRadius: 8,
+                  borderBottomLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                  borderBottomRightRadius: 8,
                 }}>{msg.content}</span>
                 {msg.thread_id && <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>Thread: {msg.thread_id}</div>}
               </div>
