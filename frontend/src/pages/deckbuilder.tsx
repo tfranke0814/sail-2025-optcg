@@ -57,6 +57,12 @@ const CardSidebar = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+            if (res.status === 404) {
+                setResults([]);
+                setError(null);
+                setLoading(false);
+                return;
+            }
             if (!res.ok) throw new Error(`API error: ${res.status}`);
             const data = await res.json();
             setResults(data.data || []);
@@ -92,7 +98,7 @@ const CardSidebar = () => {
             <CardFilterBar filters={filters} setFilters={setFilters} />
             <div className="card-list-display" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 24 }}>
                 {loading && <div style={{ color: '#aaa', textAlign: 'center', marginTop: 20 }}>Loading...</div>}
-                {error && <div style={{ color: '#e66', textAlign: 'center', marginTop: 20 }}>{error}</div>}
+                {error && error !== 'No results' && <div style={{ color: '#e66', textAlign: 'center', marginTop: 20 }}>{error}</div>}
                 {!loading && !error && results.length === 0 && <div className="card-placeholder">No results</div>}
                 {!loading && !error && results.map((card, i) => (
                   card.images && card.images.small ? (
