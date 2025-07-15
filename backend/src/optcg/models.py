@@ -24,3 +24,44 @@ class CardSearchRequest(BaseModel):
     family: Optional[str] = None
     ability: Optional[str] = None
     trigger: Optional[str] = None
+
+class CardImages(BaseModel):
+    small: str
+    large: str
+
+class CardAttribute(BaseModel):
+    name: str
+    image: str
+
+class CardSet(BaseModel):
+    name: str
+
+class CardData(BaseModel):
+    id: str
+    code: str
+    rarity: str
+    type: str
+    name: str
+    images: CardImages
+    cost: Optional[int] = None # Can be null
+    attribute: CardAttribute
+    power: Optional[int] = None # Can be null
+    counter: str
+    color: str
+    family: str
+    ability: str
+    trigger: str
+    set: CardSet
+    notes: List # List[str] -- if list vals are all str
+
+class PlayerState(BaseModel):
+    life: int
+    don: int
+    leader: Optional[CardData] = None
+    event: Optional[CardData] = None
+    stage: Optional[List[CardData]] = None
+    character: Optional[List[CardData]] = None
+
+class BoardState(BaseModel):
+    UserState: PlayerState
+    OpponentState: PlayerState
