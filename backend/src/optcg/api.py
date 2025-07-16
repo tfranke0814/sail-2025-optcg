@@ -10,7 +10,7 @@ import requests
 # Import Agents
 from optcg.agents import RulebookAgent
 # Import Pydantic models
-from optcg.models import ChatRequest, ChatResponse, CardSearchRequest
+from optcg.models import ChatRequest, ChatResponse, CardSearchRequest, BoardState
 
 # Load environment variables from .env file if it exists
 load_dotenv()  
@@ -49,9 +49,8 @@ app.add_middleware(
 )
 
 
-# Store active agents - Won't persist across server restarts
-# -- Retains short-term memory threads for each agent
-# -- Resets when the server runtime restarts
+# Global state for board and agents
+current_board_state = None
 active_agents = {}
 avail_agents = ["rulebook"] # List of available agent types. See /agents endpoint
 
@@ -78,6 +77,10 @@ async def root():
             "POST /chat": "Chat with agents", 
             "POST /cards": "Search for cards in the One Piece TCG database",
             "GET /cards/{card_id}": "Get details of a specific card by ID",
+            "POST /board-state": "Set the current board state",
+            "GET /board-state": "Get the current board state",
+            "DELETE /board-state": "Clear the current board state",
+            "POST /analyze-board": "Analyze the current board state",
             "GET /health": "Health check"
         }
     }
@@ -183,6 +186,42 @@ async def get_card(card_id: str):
     except requests.RequestException as e:
         logger.exception(f"Error contacting API TCG: {e}")
         raise HTTPException(status_code=502, detail="Error contacting API TCG")
+
+@app.post("/board-state")
+async def set_board_state(board_state: BoardState):
+    """Save the current board state for the session"""
+    global current_board_state
+    current_board_state = board_state
+    logger.debug("Board state saved")
+    return {"status": "Board state saved successfully"}
+
+@app.get("/board-state") 
+async def get_board_state():
+    """Get the current board state"""
+    if current_board_state is None:
+        logger.error("No board state found. Returning 404.")
+        raise HTTPException(status_code=404, detail="No board state found")
+    return current_board_state
+
+@app.delete("/board-state")
+async def clear_board_state():
+    """Clear the current board state"""
+    global current_board_state
+    logger.debug("Clearing board state")
+    current_board_state = None
+    return {"status": "Board state cleared"}
+
+@app.post("/analyze-board")
+async def analyze_board():
+    """Example: Analyze the current board state"""
+    if current_board_state is None:
+        logger.error("No board state set for analysis")
+        raise HTTPException(status_code=400, detail="No board state set")
+    
+    return {
+        "status": "Board state analysis not implemented yet",
+        "board_state": current_board_state
+    }
 
 @app.get("/health")
 async def health_check():
