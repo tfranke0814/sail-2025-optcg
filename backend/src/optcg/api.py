@@ -1,16 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import uuid
 import os
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
-import requests
 
-# Import Agents
-from optcg.agents import RulebookAgent
-# Import Pydantic models
-from optcg.models import ChatRequest, ChatResponse, CardSearchRequest, BoardState
+# Custom Imports
+from optcg import state
+from optcg.routes import agent_routes, card_routes, board_routes
 
 # Load environment variables from .env file if it exists
 load_dotenv()  
@@ -48,22 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Global state for board and agents
-current_board_state = None
-active_agents = {}
-avail_agents = ["rulebook"] # List of available agent types. See /agents endpoint
-
-def get_or_create_agent(agent_type: str):
-    """Get or create an agent instance"""
-    if agent_type not in active_agents:
-        if agent_type == "rulebook":
-            active_agents[agent_type] = RulebookAgent()
-        else:
-            logger.error(f"Unknown agent type requested: {agent_type}")
-            raise HTTPException(status_code=400, detail=f"Unknown agent type: {agent_type}")
-    
-    return active_agents[agent_type]
+# App Routes
+app.include_router(agent_routes.router, prefix="/agents", tags=["agents"])
+app.include_router(card_routes.router, prefix="/cards", tags=["cards"])
+app.include_router(board_routes.router, prefix="/board", tags=["board"])
 
 @app.get("/")
 async def root():
@@ -72,155 +57,6 @@ async def root():
         "status": f"{app.title} is running",
         "version": app.version,
         "docs": "/docs",
-        "endpoints": {
-            "GET /agents": "List available agent types",
-            "POST /chat": "Chat with agents", 
-            "POST /cards": "Search for cards in the One Piece TCG database",
-            "GET /cards/{card_id}": "Get details of a specific card by ID",
-            "POST /board-state": "Set the current board state",
-            "GET /board-state": "Get the current board state",
-            "DELETE /board-state": "Clear the current board state",
-            "POST /analyze-board": "Analyze the current board state",
-            "GET /health": "Health check"
-        }
-    }
-
-@app.get("/agents")
-async def list_agents():
-    """List available agent types"""
-    return {
-        "available_agents": avail_agents,
-        "descriptions": {
-            "rulebook": "Access to information in the One Piece TCG rulebooks"
-        }
-    }
-
-@app.post("/chat", response_model=ChatResponse)
-async def chat_with_agent(request: ChatRequest):
-    """Chat with an agent"""
-    try:
-        # We define the thread outside the chat method even though BaseAgent can handle it internally
-        # This allows us to return the thread_id in the response
-        # The chat method extracts the messasge response in the BaseAgent class, i.e. verbose = False
-        agent = get_or_create_agent(request.agent_type)
-        actual_thread_id = request.thread_id or str(uuid.uuid4()) # Generate a new thread ID if not provided
-        agent_response = agent.chat(request.message, thread_id=actual_thread_id)
-        return ChatResponse(
-            response=agent_response,
-            thread_id=actual_thread_id,
-            agent_type=request.agent_type
-        )
-    except Exception as e:
-        logger.error(f"Error in API <chat_with_agent>: {e}")
-        raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
-    
-@app.post("/cards")
-async def card_search(request: CardSearchRequest):
-    """Search for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
-    api_key = os.getenv("APITCG_API_KEY")
-    url = "https://apitcg.com/api/one-piece/cards/"
-    headers = {"x-api-key": api_key}
-    
-    # Build query parameters, filtering out None values
-    params = {}
-    if request.query:
-        params["name"] = request.query
-    if request.set:
-        params["code"] = request.set
-    if request.type:
-        params["type"] = request.type
-    if request.cost is not None: # Allows for cost to be 0
-        params["cost"] = request.cost
-    if request.power is not None: # Allows for power to be 0
-        params["power"] = request.power
-    if request.counter:
-        params["counter"] = request.counter
-    if request.color:
-        params["color"] = request.color
-    if request.family:
-        params["family"] = request.family
-    if request.ability:
-        params["ability"] = request.ability
-    if request.trigger:
-        params["trigger"] = request.trigger
-    
-    try:
-        logger.debug(f"Searching cards with params: {params}")
-        response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
-            logger.error(f"Card search failed with status code: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=f"Error searching cards: {response.status_code}")
-        data = response.json()
-        if data.get("error"):
-            logger.error(f"API TCG returned error for card search: {data['error']}")
-            raise HTTPException(status_code=400, detail=f"Error searching cards: {data['error']}")
-        if not data.get("data"):
-            logger.error("API TCG called but no cards found (empty data)")
-            raise HTTPException(status_code=404, detail="No cards found matching the search criteria")
-        return data
-    except requests.RequestException as e:
-        logger.exception(f"Error contacting API TCG: {e}")
-        raise HTTPException(status_code=502, detail="Error contacting API TCG")
-
-@app.get("/cards/{card_id}")
-async def get_card(card_id: str):
-    """Get details of a specific card by ID from API TCG"""
-    api_key = os.getenv("APITCG_API_KEY")
-    url = f"https://apitcg.com/api/one-piece/cards/{card_id}"
-    headers = {"x-api-key": api_key}
-
-    try:
-        logger.debug(f"Fetching card {card_id} from {url}")
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            logger.error(f"Card not found: {card_id}, status code: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=f"Error fetching card data: {response.status_code}")
-        data = response.json()
-        if data.get("error"):
-            logger.error(f"API TCG returned error for card {card_id}: {data['error']}")
-            raise HTTPException(status_code=404, detail=f"Error fetching card data: {data['error']}")
-        if not data.get("data"):
-            logger.error(f"API TCG called and card not found (empty data): {card_id}")
-            raise HTTPException(status_code=404, detail="Card not found")
-        return data
-    except requests.RequestException as e:
-        logger.exception(f"Error contacting API TCG: {e}")
-        raise HTTPException(status_code=502, detail="Error contacting API TCG")
-
-@app.post("/board-state")
-async def set_board_state(board_state: BoardState):
-    """Save the current board state for the session"""
-    global current_board_state
-    current_board_state = board_state
-    logger.debug("Board state saved")
-    return {"status": "Board state saved successfully"}
-
-@app.get("/board-state") 
-async def get_board_state():
-    """Get the current board state"""
-    if current_board_state is None:
-        logger.error("No board state found. Returning 404.")
-        raise HTTPException(status_code=404, detail="No board state found")
-    return current_board_state
-
-@app.delete("/board-state")
-async def clear_board_state():
-    """Clear the current board state"""
-    global current_board_state
-    logger.debug("Clearing board state")
-    current_board_state = None
-    return {"status": "Board state cleared"}
-
-@app.post("/analyze-board")
-async def analyze_board():
-    """Example: Analyze the current board state"""
-    if current_board_state is None:
-        logger.error("No board state set for analysis")
-        raise HTTPException(status_code=400, detail="No board state set")
-    
-    return {
-        "status": "Board state analysis not implemented yet",
-        "board_state": current_board_state
     }
 
 @app.get("/health")
@@ -228,7 +64,7 @@ async def health_check():
     """Detailed health check"""
     return {
         "status": "healthy",
-        "agents_loaded": list(active_agents.keys()),
+        "agents_loaded": list(state.active_agents.keys()),
         "environment": {
             "langsmith_api_key": bool(os.getenv("LANGSMITH_API_KEY")),
             "openai_api_key": bool(os.getenv("OPENAI_API_KEY")), 
