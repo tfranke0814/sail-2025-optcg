@@ -1,0 +1,231 @@
+{
+  "UserState" : {
+    "life": 4,
+    "don": 7,
+    "leader": {
+      "id": "OP01-001",
+      "code": "OP01-001",
+      "rarity": "L",
+      "type": "LEADER",
+      "name": "Roronoa Zoro",
+      "images": {
+        "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-001.png",
+        "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-001.png"
+      },
+      "cost": 5,
+      "attribute": {
+        "name": "Slash",
+        "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type02.png"
+      },
+      "power": 5000,
+      "counter": "-",
+      "color": "Red",
+      "family": "Supernovas/Straw Hat Crew",
+      "ability": "[DON!! x1] [Your Turn] All of your Characters gain +1000 power.",
+      "trigger": "",
+      "set": {
+        "name": "-ROMANCE DAWN- [OP01]"
+      },
+      "notes": []
+    },
+    "event": null,
+    "stage": null,
+    "character": [
+      {
+        "id": "OP01-025",
+        "code": "OP01-025",
+        "rarity": "SR",
+        "type": "CHARACTER",
+        "name": "Roronoa Zoro",
+        "images": {
+          "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-025.png",
+          "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-025.png"
+        },
+        "cost": 3,
+        "attribute": {
+          "name": "Slash",
+          "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type02.png"
+        },
+        "power": 5000,
+        "counter": "-",
+        "color": "Red",
+        "family": "Supernovas/Straw Hat Crew",
+        "ability": "[Rush] (This card can attack on the turn in which it is played.)",
+        "trigger": "",
+        "set": {
+          "name": "-ROMANCE DAWN- [OP01]"
+        },
+        "notes": []
+      }, 
+      {
+        "id": "OP01-017",
+        "code": "OP01-017",
+        "rarity": "R",
+        "type": "CHARACTER",
+        "name": "Nico Robin",
+        "images": {
+          "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-017.png",
+          "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-017.png"
+        },
+        "cost": 3,
+        "attribute": {
+          "name": "Strike",
+          "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type01.png"
+        },
+        "power": 4000,
+        "counter": "1000",
+        "color": "Red",
+        "family": "Straw Hat Crew",
+        "ability": "[DON!! x1] [When Attacking] K.O. up to 1 of your opponent's Characters with 3000 power or less.",
+        "trigger": "",
+        "set": {
+          "name": "-ROMANCE DAWN- [OP01]"
+        },
+        "notes": [
+          {
+            "name": "Errata Card",
+            "url": "https://en.onepiece-cardgame.com//rules/errata_card/#errata_05"
+          }
+        ]
+      }, 
+      {
+        "id": "OP01-023",
+        "code": "OP01-023",
+        "rarity": "C",
+        "type": "CHARACTER",
+        "name": "Marco",
+        "images": {
+          "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-023.png",
+          "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP01-023.png"
+        },
+        "cost": 3,
+        "attribute": {
+          "name": "Special",
+          "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type03.png"
+        },
+        "power": 5000,
+        "counter": "1000",
+        "color": "Red",
+        "family": "Former Whitebeard Pirates",
+        "ability": "-",
+        "trigger": "",
+        "set": {
+          "name": "-ROMANCE DAWN- [OP01]"
+        },
+        "notes": []
+      }
+    ]
+  }, 
+  "OpponentState" : {
+    "life": 3,
+    "don": 8,
+    "leader": {
+    "id": "ST02-001",
+    "code": "ST02-001",
+    "rarity": "L",
+    "type": "LEADER",
+    "name": "Eustass\"Captain\"Kid",
+    "images": {
+      "small": "https://en.onepiece-cardgame.com/images/cardlist/card/ST02-001.png",
+      "large": "https://en.onepiece-cardgame.com/images/cardlist/card/ST02-001.png"
+    },
+    "cost": 5,
+    "attribute": {
+      "name": "Special",
+      "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type03.png"
+    },
+    "power": 5000,
+    "counter": "-",
+    "color": "Green",
+    "family": "Supernovas/Kid Pirates",
+    "ability": "[Activate: Main] [Once Per Turn]  ③ (You may rest the specified number of DON!! cards in your cost area.) You may trash 1 card from your hand: Set this Leader as active.",
+    "trigger": "",
+    "set": {
+      "name": "-Worst Generation-[ST-02]"
+    },
+    "notes": []
+  },
+    "event": null,
+    "stage": null,
+    "character": [
+        {
+    "id": "OP02-036",
+    "code": "OP02-036",
+    "rarity": "SR",
+    "type": "CHARACTER",
+    "name": "Nami",
+    "images": {
+      "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png",
+      "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png"
+    },
+    "cost": 3,
+    "attribute": {
+      "name": "Special",
+      "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type03.png"
+    },
+    "power": 5000,
+    "counter": "-",
+    "color": "Green",
+    "family": "FILM/Straw Hat Crew",
+    "ability": "[On Play]/[When Attacking] ➀ (You may rest the specified number of DON!! cards in your cost area.): Look at 3 cards from the top of your deck; reveal up to 1 {FILM} type card other than [Nami] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "trigger": "",
+    "set": {
+      "name": "-PARAMOUNT WAR- [OP02]"
+    },
+    "notes": []
+  }, 
+  {
+    "id": "OP02-036",
+    "code": "OP02-036",
+    "rarity": "SR",
+    "type": "CHARACTER",
+    "name": "Nami",
+    "images": {
+      "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png",
+      "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png"
+    },
+    "cost": 3,
+    "attribute": {
+      "name": "Special",
+      "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type03.png"
+    },
+    "power": 5000,
+    "counter": "-",
+    "color": "Green",
+    "family": "FILM/Straw Hat Crew",
+    "ability": "[On Play]/[When Attacking] ➀ (You may rest the specified number of DON!! cards in your cost area.): Look at 3 cards from the top of your deck; reveal up to 1 {FILM} type card other than [Nami] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "trigger": "",
+    "set": {
+      "name": "-PARAMOUNT WAR- [OP02]"
+    },
+    "notes": []
+  }, 
+  {
+    "id": "OP02-036",
+    "code": "OP02-036",
+    "rarity": "SR",
+    "type": "CHARACTER",
+    "name": "Nami",
+    "images": {
+      "small": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png",
+      "large": "https://en.onepiece-cardgame.com/images/cardlist/card/OP02-036.png"
+    },
+    "cost": 3,
+    "attribute": {
+      "name": "Special",
+      "image": "https://en.onepiece-cardgame.com/images/cardlist/attribute/ico_type03.png"
+    },
+    "power": 5000,
+    "counter": "-",
+    "color": "Green",
+    "family": "FILM/Straw Hat Crew",
+    "ability": "[On Play]/[When Attacking] ➀ (You may rest the specified number of DON!! cards in your cost area.): Look at 3 cards from the top of your deck; reveal up to 1 {FILM} type card other than [Nami] and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
+    "trigger": "",
+    "set": {
+      "name": "-PARAMOUNT WAR- [OP02]"
+    },
+    "notes": []
+  }
+    ]
+  }
+}
