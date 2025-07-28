@@ -19,15 +19,15 @@ async def card_search(request: CardSearchRequest):
     
     # Build query parameters, filtering out None values
     params = {}
-    if request.query:
-        params["name"] = request.query
+    if request.name:
+        params["name"] = request.name
     if request.set:
         params["code"] = request.set
     if request.type:
         params["type"] = request.type
-    if request.cost is not None: # Allows for cost to be 0
+    if request.cost is not None:
         params["cost"] = request.cost
-    if request.power is not None: # Allows for power to be 0
+    if request.power is not None:
         params["power"] = request.power
     if request.counter:
         params["counter"] = request.counter
@@ -39,21 +39,31 @@ async def card_search(request: CardSearchRequest):
         params["ability"] = request.ability
     if request.trigger:
         params["trigger"] = request.trigger
-    
+
     try:
         logger.debug(f"Searching cards with params: {params}")
-        response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
-            logger.error(f"Card search failed with status code: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=f"Error searching cards: {response.status_code}")
-        data = response.json()
-        if data.get("error"):
-            logger.error(f"API TCG returned error for card search: {data['error']}")
-            raise HTTPException(status_code=400, detail=f"Error searching cards: {data['error']}")
-        if not data.get("data"):
-            logger.error("API TCG called but no cards found (empty data)")
-            raise HTTPException(status_code=404, detail="No cards found matching the search criteria")
-        return data
+        all_cards = []
+        page = 1
+        total_pages = 1  # default, will be updated after first request
+        while page <= total_pages:
+            params["page"] = page
+            response = requests.get(url, headers=headers, params=params)
+            if response.status_code != 200:
+                logger.error(f"Card search failed with status code: {response.status_code}")
+                raise HTTPException(status_code=response.status_code, detail=f"Error searching cards: {response.status_code}")
+            data = response.json()
+            if data.get("error"):
+                logger.error(f"API TCG returned error for card search: {data['error']}")
+                raise HTTPException(status_code=400, detail=f"Error searching cards: {data['error']}")
+            if not data.get("data"):
+                logger.error("API TCG called but no cards found (empty data)")
+                if page == 1:
+                    raise HTTPException(status_code=404, detail="No cards found matching the search criteria")
+                break
+            all_cards.extend(data["data"])
+            total_pages = data.get("totalPages", 1)
+            page += 1
+        return {"data": all_cards}
     except requests.RequestException as e:
         logger.exception(f"Error contacting API TCG: {e}")
         raise HTTPException(status_code=502, detail="Error contacting API TCG")
