@@ -13,7 +13,7 @@ class ChatResponse(BaseModel):
     agent_type: str
 
 class CardSearchRequest(BaseModel):
-    query: Optional[str] = None # Query by name of a card
+    name: Optional[str] = None # Query by name of a card
     set: Optional[str] = None # Set code, e.g. "OP01"
     # rarity: Optional[str] = None # "C" returns both "C", "UC", and "SEC"... similarly with "R"
     type: Optional[str] = None
