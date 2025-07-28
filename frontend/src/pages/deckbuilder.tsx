@@ -793,7 +793,7 @@ const ChatWidget = forwardRef((props, ref) => {
       setLoading(true);
       setMessages(msgs => [...msgs, { role: 'user', content: '[Board State Updated]\n' + JSON.stringify(gameState, null, 2) }]);
       try {
-        const res = await fetch('http://localhost:8000/chat', {
+        const res = await fetch('http://localhost:8000/agents/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -868,7 +868,7 @@ const ChatWidget = forwardRef((props, ref) => {
     try {
       const body: any = { message: input, agent_type: 'rulebook' };
       if (threadId) body.thread_id = threadId;
-      const res = await fetch('http://localhost:8000/chat', {
+      const res = await fetch('http://localhost:8000/agents/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
