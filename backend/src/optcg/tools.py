@@ -1,4 +1,5 @@
 # region Imports
+import os
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_core.tools.retriever import create_retriever_tool
@@ -14,8 +15,11 @@ import requests
 from optcg.vectorstore_logic import create_or_load_vectorstore_optcg_rulebooks
 from optcg.models import CardSearchRequest, BoardState
 
+api_base_url = os.getenv("API_BASE_URL", "http://localhost:8000")
+
 ## Available Tools
 # - create_rulebook_retriever_tool() -- (use as function call)
+# - get_board_tool
 # - web_search_tool
 # - youtube_search_tool
 # - card_search_tool
@@ -45,7 +49,7 @@ def get_board_tool() -> dict:
     """Tool that retrieves the game board state set up by the user for the One Piece TCG. Returns the current board state as a JSON. If no board state is set, returns an error message."""
     try:
         response = requests.get(
-            "http://localhost:8000/board"
+            f"{api_base_url}/board/"
         )
         response.raise_for_status()
     except requests.RequestException as e:
@@ -61,7 +65,7 @@ def card_search_tool(input: CardSearchRequest) -> List[dict]:
     """Tool that searches for cards in the One Piece TCG database with API TCG. Returns a list of cards matching the search criteria."""
     try:
         response = requests.post(
-            "http://localhost:8000/cards",
+            f"{api_base_url}/cards",
             json=input.model_dump(exclude_none=True) 
         )
         response.raise_for_status()

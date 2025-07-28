@@ -28,6 +28,8 @@ async def lifespan(app: FastAPI):
         for var in required_env_vars:
             if not os.getenv(var):
                 raise ValueError(f"{var} environment variable is required")
+        if os.getenv("API_BASE_URL") == "http://localhost:8000":
+            logger.warning("⚠️ Running in local development mode. Ensure this is intended.")
         logger.info("✅ Environment validated")
         yield
     except Exception as e:
