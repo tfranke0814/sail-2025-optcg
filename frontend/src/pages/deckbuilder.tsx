@@ -797,7 +797,7 @@ const ChatWidget = forwardRef((props, ref) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            agent_type: 'rulebook',
+            agent_type: 'userChat',
             message: 'Analyze the current board state and suggest possible moves.',
             game_state: gameState,
           }),
@@ -866,7 +866,7 @@ const ChatWidget = forwardRef((props, ref) => {
     setInput('');
     setLoading(true);
     try {
-      const body: any = { message: input, agent_type: 'rulebook' };
+      const body: any = { message: input, agent_type: 'userChat' };
       if (threadId) body.thread_id = threadId;
       const res = await fetch('http://localhost:8000/agents/chat', {
         method: 'POST',
@@ -943,6 +943,7 @@ const ChatWidget = forwardRef((props, ref) => {
               <div key={i} style={{ margin: '8px 0', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                 <span style={{
                   display: 'inline-block',
+                  whiteSpace: 'pre-line',
                   background: msg.role === 'user' ? '#3578e6' : '#444',
                   color: '#fff',
                   borderRadius: 8,
