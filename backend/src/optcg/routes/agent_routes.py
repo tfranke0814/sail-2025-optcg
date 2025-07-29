@@ -5,12 +5,12 @@ import uuid
 # Custom Imports
 from optcg import state
 from optcg.models import ChatRequest, ChatResponse
-from optcg.agents import RulebookAgent
+from optcg.agents import RulebookAgent, ChatAgent
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-AVAILABLE_AGENTS = ["rulebook"]
+AVAILABLE_AGENTS = ["rulebook", "userChat"]
 
 def get_or_create_agent(agent_type: str):
     """Get or create an agent instance"""
@@ -18,6 +18,9 @@ def get_or_create_agent(agent_type: str):
     if agent_type not in state.active_agents:
         if agent_type == "rulebook":
             state.active_agents[agent_type] = RulebookAgent()
+            logger.debug(f"Created new agent of type: {agent_type}")
+        elif agent_type == "userChat":
+            state.active_agents[agent_type] = ChatAgent()
             logger.debug(f"Created new agent of type: {agent_type}")
         else:
             logger.error(f"Unknown agent type requested: {agent_type}")
@@ -32,7 +35,8 @@ async def list_agents():
     return {
         "available_agents": AVAILABLE_AGENTS,
         "descriptions": {
-            "rulebook": "Access to information in the One Piece TCG rulebooks"
+            "rulebook": "Access to information in the One Piece TCG rulebooks",
+            "userChat": "General chat agent for board state discussions and questions"
         }
     }
 

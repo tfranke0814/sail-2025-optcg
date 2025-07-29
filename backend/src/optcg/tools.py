@@ -1,4 +1,6 @@
 # region Imports
+from asyncio.log import logger
+from asyncio.log import logger
 import os
 from dotenv import load_dotenv
 from langchain_core.tools import tool
@@ -14,6 +16,7 @@ import requests
 # Custom Imports
 from optcg.vectorstore_logic import create_or_load_vectorstore_optcg_rulebooks
 from optcg.models import CardSearchRequest, BoardState
+from optcg import state
 
 api_base_url = os.getenv("API_BASE_URL", "http://localhost:8000")
 
@@ -44,9 +47,23 @@ def create_rulebook_retriever_tool():
 
 
 # region get_board_tool
+
+# Primary tool to get the current board state
+# Depends on the process memory or state management to store the current board state
 @tool
 def get_board_tool() -> dict:
     """Tool that retrieves the game board state set up by the user for the One Piece TCG. Returns the current board state as a JSON. If no board state is set, returns an error message."""
+    if state.current_board_state is None:
+        logger.debug("No board state found. Returning 404.")
+        return {"error": "No board state found. Please tell user to update the board state first."}
+    return state.current_board_state
+
+# Old version that uses HTTP to get the board state from the API
+# For testing purposes, can be removed later
+@tool 
+def get_board_tool_http() -> dict:
+    """Tool that retrieves the game board state set up by the user for the One Piece TCG. Returns the current board state as a JSON. If no board state is set, returns an error message."""
+    response = None
     try:
         response = requests.get(
             f"{api_base_url}/board/"
@@ -59,6 +76,7 @@ def get_board_tool() -> dict:
         return {"error": str(e)}
     return response.json()
 # endregion get_board_tool
+
 
 
 # region card_search_tool
