@@ -56,7 +56,10 @@ from optcg.tools import create_rulebook_retriever_tool, web_search_tool, youtube
 # region BaseAgent Class
 class BaseAgent(ABC):
     def __init__(self, model_name="gpt-4o-mini", temperature=0):
-        self.model = ChatOpenAI(model=model_name, temperature=temperature)
+        if model_name in ["o4-mini", "o3-mini"]:
+            self.model = ChatOpenAI(model=model_name)
+        else:
+            self.model = ChatOpenAI(model=model_name, temperature=temperature)
         if not hasattr(self, 'name'): # Ensure name is set if not specified in subclasses
             self.name = "NamelessAgent"
         self.memory = InMemorySaver()
@@ -108,6 +111,24 @@ class BaseAgent(ABC):
             print(f"Could not generate graph: {e}")
             return None
 # endregion BaseAgent Class
+
+
+
+# region ChatAgent Class
+class ChatAgent(BaseAgent):
+    def __init__(self, model_name="gpt-4.1"):
+        self.name = "ChatAgent"
+        super().__init__(model_name=model_name, temperature=0)
+    
+    def _create_prompt(self):
+        return "You are a helpful assistant that helps people answer information about the One Piece TCG based on their current board state. You have access to the following tools: {tools}. To get the current board state, use the get board state tool. Use the rulebook retriever tool to find the information related to the rules of the game. If you give advice or turn recommendations, you MUST ensure it is correct by consulting the rulebooks. If you don't know the answer, just say you don't know. Do not try to make up an answer."
+
+    def _setup_tools(self):
+        return [
+            create_rulebook_retriever_tool(), 
+            get_board_tool
+        ]
+# endregion ChatAgent Class
 
 
 
