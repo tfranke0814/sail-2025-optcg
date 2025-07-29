@@ -54,6 +54,8 @@ def get_board_tool() -> dict:
         response.raise_for_status()
     except requests.RequestException as e:
         logging.exception(f"Exception in get_board_tool: {str(e)}")
+        if response is not None and response.status_code == 404:
+            return {"error": "No board state found. Please tell user to update the board state first."}
         return {"error": str(e)}
     return response.json()
 # endregion get_board_tool
