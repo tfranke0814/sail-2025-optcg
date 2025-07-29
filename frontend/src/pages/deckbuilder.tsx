@@ -1030,6 +1030,22 @@ const exportGameState = (gameState: any) => {
   URL.revokeObjectURL(url);
 };
 
+// Utility to fix CardData structure for backend schema compliance
+function fixCardData(card: any) {
+  if (!card) return card;
+  // Fix attribute
+  if (card.attribute) {
+    if (typeof card.attribute.name !== 'string') card.attribute.name = '';
+    if (typeof card.attribute.image !== 'string') card.attribute.image = '';
+  }
+  // Fix set
+  if (card.set && typeof card.set.name !== 'string') card.set.name = '';
+  return card;
+}
+function fixCardArray(arr: any[]) {
+  return (arr || []).filter(x => x !== null && x !== undefined).map(fixCardData);
+}
+
 // 1. In DeckBuilderPage, lift all board state up from GameBoard
 // 2. Pass all state and setters as props to GameBoard
 // 3. Add an Update button and handler in DeckBuilderPage
@@ -1074,26 +1090,27 @@ const DeckBuilderPage = () => {
   const handleUpdateBoardState = async () => {
     // User (bottom half)
     const userState = {
-      life: lifeCardsRight.filter(x => x !== null).length,
-      don: donCardsBottom.filter(x => x !== null).length,
-      leader: leaderCardBottom,
-      event: eventCardBottom,
-      stage: stageCardBottom,
-      character: characterCards.slice(5, 10).filter(x => x !== null),
+      life: lifeCardsRight.filter(x => x !== null && x !== undefined).length,
+      don: donCardsBottom.filter(x => x !== null && x !== undefined).length,
+      leader: fixCardData(leaderCardBottom) || null,
+      event: fixCardData(eventCardBottom) || null,
+      stage: stageCardBottom != null ? [fixCardData(stageCardBottom)] : [],
+      character: fixCardArray(characterCards.slice(5, 10)),
     };
     // Opponent (top half)
     const opponentState = {
-      life: lifeCardsLeft.filter(x => x !== null).length,
-      don: donCardsTop.filter(x => x !== null).length,
-      leader: leaderCardTop,
-      event: eventCardTop,
-      stage: stageCardTop,
-      character: characterCards.slice(0, 5).filter(x => x !== null),
+      life: lifeCardsLeft.filter(x => x !== null && x !== undefined).length,
+      don: donCardsTop.filter(x => x !== null && x !== undefined).length,
+      leader: fixCardData(leaderCardTop) || null,
+      event: fixCardData(eventCardTop) || null,
+      stage: stageCardTop != null ? [fixCardData(stageCardTop)] : [],
+      character: fixCardArray(characterCards.slice(0, 5)),
     };
     const gameState = {
       UserState: userState,
       OpponentState: opponentState,
     };
+    console.log('Sending to /board/:', JSON.stringify(gameState, null, 2)); // for debugging
     try {
       const res = await fetch('http://localhost:8000/board/', {
         method: 'POST',
@@ -1161,7 +1178,7 @@ const DeckBuilderPage = () => {
                 don: donCardsBottom.filter(x => x !== null).length,
                 leader: leaderCardBottom,
                 event: eventCardBottom,
-                stage: stageCardBottom,
+                stage: stageCardBottom ? [stageCardBottom] : [], // ensure it's always an array
                 character: characterCards.slice(5, 10).filter(x => x !== null),
               };
               // Opponent (top half)
@@ -1170,7 +1187,7 @@ const DeckBuilderPage = () => {
                 don: donCardsTop.filter(x => x !== null).length,
                 leader: leaderCardTop,
                 event: eventCardTop,
-                stage: stageCardTop,
+                stage: stageCardTop ? [stageCardTop] : [], // ensure it's always an array
                 character: characterCards.slice(0, 5).filter(x => x !== null),
               };
               const gameState = {
