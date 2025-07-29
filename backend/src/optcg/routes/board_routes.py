@@ -20,7 +20,7 @@ async def get_board_state():
     """Get the current board state"""
     if state.current_board_state is None:
         logger.debug("No board state found. Returning 404.")
-        raise HTTPException(status_code=404, detail="No board state found")
+        raise HTTPException(status_code=404, detail="No board state found. Please update the board state first.")
     return state.current_board_state
 
 @router.delete("/")

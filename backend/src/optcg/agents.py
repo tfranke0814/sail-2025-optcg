@@ -11,7 +11,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langsmith import traceable
 
 # Custom Imports
-from optcg.tools import create_rulebook_retriever_tool, web_search_tool, youtube_search_tool, card_search_tool
+from optcg.tools import create_rulebook_retriever_tool, web_search_tool, youtube_search_tool, card_search_tool, get_board_tool
 
 
 ## This file defines the base agent class for the optcg project.
@@ -118,11 +118,12 @@ class RulebookAgent(BaseAgent):
         super().__init__(model_name=model_name, temperature=0)
     
     def _create_prompt(self):
-        return "You are a helpful assistant that helps people find information in the Rulebook for One Piece TCG, otherwise abbreviated as optcg. You have access to the following tools: {tools}. Use them to find the information the user is looking for. If you don't know the answer, just say you don't know. Do not try to make up an answer. If you cannot find the answer in the rulebooks, tell the user that you cannot find the answer in the rulebooks."
+        return "You are a helpful assistant that helps people find information in the Rulebook for One Piece TCG, otherwise abbreviated as optcg. You have access to the following tools: {tools}. Use the Rulebook to find the information the user is looking for related to rules. If the user ask for the current board state, use the get board state tool. If you don't know the answer, just say you don't know. Do not try to make up an answer."
     
     def _setup_tools(self):
         return [
-            create_rulebook_retriever_tool()
+            create_rulebook_retriever_tool(), 
+            get_board_tool
         ]
 # endregion RulebookAgent Class
 

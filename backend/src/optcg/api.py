@@ -4,15 +4,9 @@ import os
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
-import uuid
-import logging
-from fastapi import HTTPException
-from optcg.models import ChatRequest, ChatResponse
-# Make sure get_or_create_agent is imported or defined
-from optcg.routes.agent_routes import get_or_create_agent
 
 # Custom Imports
-import optcg.state as state
+from optcg import state
 from optcg.routes import agent_routes, card_routes, board_routes
 
 # Load environment variables from .env file if it exists
@@ -34,6 +28,8 @@ async def lifespan(app: FastAPI):
         for var in required_env_vars:
             if not os.getenv(var):
                 raise ValueError(f"{var} environment variable is required")
+        if os.getenv("API_BASE_URL") == "http://localhost:8000":
+            logger.warning("⚠️ Running in local development mode. Ensure this is intended.")
         logger.info("✅ Environment validated")
         yield
     except Exception as e:
@@ -80,24 +76,6 @@ async def health_check():
         }
     }
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat_with_agent(request: ChatRequest):
-    """Chat with an agent"""
-    try:
-        # We define the thread outside the chat method even though BaseAgent can handle it internally
-        # This allows us to return the thread_id in the response
-        # The chat method extracts the messasge response in the BaseAgent class, i.e. verbose = False
-        agent = get_or_create_agent(request.agent_type)
-        actual_thread_id = request.thread_id or str(uuid.uuid4()) # Generate a new thread ID if not provided
-        agent_response = agent.chat(request.message, thread_id=actual_thread_id)
-        return ChatResponse(
-            response=agent_response,
-            thread_id=actual_thread_id,
-            agent_type=request.agent_type
-        )
-    except Exception as e:
-        logger.error(f"Error in API <chat_with_agent>: {e}")
-        raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
