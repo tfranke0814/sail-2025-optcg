@@ -9,7 +9,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.post("/")
-async def set_board_state(board_state: BoardState):
+async def set_board_state(board_state: dict):#BoardState): # Testing
     """Save the current board state for the session"""
     state.current_board_state = board_state
     logger.debug("Board state saved")
