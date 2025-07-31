@@ -9,7 +9,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.post("/")
-async def set_board_state(board_state: BoardState):
+async def set_board_state(board_state: dict): # TODO: add type: BoardState
     """Save the current board state for the session"""
     state.current_board_state = board_state
     logger.debug("Board state saved")
@@ -29,15 +29,3 @@ async def clear_board_state():
     logger.debug("Clearing board state")
     state.current_board_state = None
     return {"status": "Board state cleared"}
-
-@router.post("/analyze")
-async def analyze_board():
-    """Example: Analyze the current board state"""
-    if state.current_board_state is None:
-        logger.debug("No board state set for analysis")
-        raise HTTPException(status_code=400, detail="No board state set")
-    
-    return {
-        "status": "Board state analysis not implemented yet",
-        "board_state": state.current_board_state
-    }
