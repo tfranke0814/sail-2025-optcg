@@ -4,8 +4,8 @@ import uuid
 
 # Custom Imports
 from optcg import state
-from optcg.models import ChatRequest, ChatResponse
-from optcg.agents import RulebookAgent, ChatAgent
+from optcg.schemas import ChatRequest, ChatResponse
+from optcg.agents.react import RulebookAgent, ChatAgent
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
