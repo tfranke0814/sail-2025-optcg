@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from typing_extensions import TypedDict, Literal
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
@@ -65,3 +66,13 @@ class PlayerState(BaseModel):
 class BoardState(BaseModel):
     UserState: PlayerState
     OpponentState: PlayerState
+
+# Schema for state for board_assistant
+class StateInput(TypedDict):
+    message: str
+    thread_id: str | None
+
+class State(TypedDict):
+    message: str
+    thread_id: str
+    board: dict # Replace with BoardState
