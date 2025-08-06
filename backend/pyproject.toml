@@ -1,10 +1,35 @@
+[project]
+name = "optcg-sail"
+version = "0.1.0"
+description = "UI State Analysis for OPTCG"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dotenv>=0.9.9",
+    "fastapi>=0.116.1",
+    "langchain>=0.3.27",
+    "langchain-chroma>=0.2.5",
+    "langchain-community>=0.3.27",
+    "langchain-core>=0.3.72",
+    "langchain-openai>=0.3.28",
+    "langchain-tavily>=0.2.11",
+    "langgraph>=0.6.3",
+    "langsmith>=0.4.11",
+    "requests>=2.32.4",
+]
+
+
 [build-system]
 requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
-[project]
-name = "optcg-sail"
-version = "0.0.0"
-
 [tool.setuptools]
-package-dir = {"" = "src"}
+packages = ["optcg"]
+
+[tool.setuptools.package-dir]
+"optcg" = "src/optcg"
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+]
