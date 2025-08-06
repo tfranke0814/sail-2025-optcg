@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan event to validate environment on startup"""
     try:
-        required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
+        required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY"]
         # LangSmith is optional, not required for basic functionality
         for var in required_env_vars:
             if not os.getenv(var):
