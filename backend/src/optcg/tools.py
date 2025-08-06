@@ -63,7 +63,10 @@ def get_board_tool() -> dict:
 # For testing purposes, can be removed later
 @tool 
 def get_board_tool_http() -> dict:
-    """Retrieves the game board state set up by the user for the One Piece TCG. Returns the current board state as a JSON. If no board state is set, returns an error message."""
+    """Retrieves the game board state set up by the user for the One Piece TCG.
+
+    Returns:
+      The current board state as a JSON object or an error message if no board state is set."""
     response = None
     try:
         response = requests.get(
