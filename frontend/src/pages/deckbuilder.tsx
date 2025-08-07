@@ -331,7 +331,7 @@ const DroppableBoardSlot = ({ card, onDropCard, slotType, style, row, setHovered
           title="Rotate card"
         >⟳</button>
       )}
-      {showRotate && slotType !== 'DON' && (
+      {showRotate && slotType !== 'DON' && slotType !== 'HAND' && slotType !== 'EVENT' && (
         <button
           onClick={e => { e.stopPropagation(); onRotateCard && onRotateCard(); }}
           style={{
@@ -341,12 +341,22 @@ const DroppableBoardSlot = ({ card, onDropCard, slotType, style, row, setHovered
           title="Rotate card"
         >⟳</button>
       )}
-      {card ? (
+      {card && card.images && card.images.small ? (
         <img
           src={card.images.small}
           alt={card.name}
           // Rotate the card if card.rotated is true
-          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, transform: card.rotated ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: 8,
+            transform: card.rotated ? 'rotate(90deg)' : 'none',
+            transition: card.rotated ? 'transform 0.2s' : 'none',
+            background: 'transparent',
+            position: 'relative',
+            zIndex: 1,
+          }}
           onMouseEnter={() => setHoveredCard && setHoveredCard({ card, source: 'right' })}
           onMouseLeave={() => setHoveredCard && setHoveredCard(null)}
         />
@@ -371,7 +381,10 @@ const GameBoard = ({
   stageCardBottom, setStageCardBottom,
   donCardsTop, setDonCardsTop,
   donCardsBottom, setDonCardsBottom,
+  handCards, setHandCards,
+  opponentHandSize, setOpponentHandSize,
   clearAll,
+  untapAll,
 }: {
   setHoveredCard: SetHoveredCard;
   characterCards: (Card | null)[];
@@ -396,7 +409,12 @@ const GameBoard = ({
   setDonCardsTop: React.Dispatch<React.SetStateAction<(Card | null)[]>>;
   donCardsBottom: (Card | null)[];
   setDonCardsBottom: React.Dispatch<React.SetStateAction<(Card | null)[]>>;
+  handCards: (Card | null)[];
+  setHandCards: React.Dispatch<React.SetStateAction<(Card | null)[]>>;
+  opponentHandSize: number;
+  setOpponentHandSize: React.Dispatch<React.SetStateAction<number>>;
   clearAll: () => void;
+  untapAll: () => void;
 }) => {
   // All board state is now managed in DeckBuilderPage and passed as props
   // Remove all useState for board state here
@@ -520,7 +538,9 @@ const GameBoard = ({
         <button style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'rgba(30,30,30,0.38)', color: '#fff', border: 'none', borderRadius: 5, padding: '6px 16px', fontWeight: 600, fontSize: 16, cursor: 'pointer'
-        }}>
+        }}
+          onClick={untapAll}
+        >
           <span role="img" aria-label="untap">🔄</span> Untap All
         </button>
         <button
@@ -536,14 +556,14 @@ const GameBoard = ({
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '10px 0' }}>
           {/* DON!! + - group */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 4, marginRight: 8 }}>
-            <button onClick={handleAddDonTop} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2 }}>+</button>
-            <button onClick={handleRemoveDonTop} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>-</button>
+            <button onClick={handleAddDonTop} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>+</button>
+            <button onClick={handleRemoveDonTop} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>-</button>
           </div>
           <div className="don-area" style={{ display: 'flex', justifyContent: 'center' }}>
             {donCardsTop.map((card, i) => (
               card ? (
                 <DroppableBoardSlot
-                  key={i}
+                  key={`don-top-${i}-${card.id}-${card.rotated}`}
                   card={card}
                   slotType="DON"
                   style={{ width: 80, height: 110, margin: 5, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -566,165 +586,184 @@ const GameBoard = ({
                   }}
                 />
               ) : (
-              <div key={i} className="card-slot don-slot">DON!!</div>
+              <div key={`don-top-empty-${i}`} className="card-slot don-slot">DON!!</div>
               )
             ))}
           </div>
         </div>
         {/* Top EVENT - LEADER - STAGE row */}
         <div className="leader-stage-area" style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-          <DroppableBoardSlot card={eventCardTop} slotType="EVENT" onDropCard={setEventCardTop} row={0} setHoveredCard={setHoveredCard} onRotateCard={() => eventCardTop && setEventCardTop({ ...eventCardTop, rotated: !eventCardTop.rotated })} />
-          <DroppableBoardSlot card={leaderCardTop} slotType="LEADER" onDropCard={setLeaderCardTop} row={0} setHoveredCard={setHoveredCard} onRotateCard={() => leaderCardTop && setLeaderCardTop({ ...leaderCardTop, rotated: !leaderCardTop.rotated })} />
-          <DroppableBoardSlot card={stageCardTop} slotType="STAGE" onDropCard={setStageCardTop} row={0} setHoveredCard={setHoveredCard} onRotateCard={() => stageCardTop && setStageCardTop({ ...stageCardTop, rotated: !stageCardTop.rotated })} />
+          <DroppableBoardSlot key={`event-top-${eventCardTop?.id ?? 'empty'}-${eventCardTop?.rotated}`} card={eventCardTop} slotType="EVENT" onDropCard={setEventCardTop} row={0} setHoveredCard={setHoveredCard} />
+          <DroppableBoardSlot key={`leader-top-${leaderCardTop?.id ?? 'empty'}-${leaderCardTop?.rotated}`} card={leaderCardTop} slotType="LEADER" onDropCard={setLeaderCardTop} row={0} setHoveredCard={setHoveredCard}
+            onRotateCard={() => {
+              setLeaderCardTop(leaderCardTop ? { ...leaderCardTop, rotated: !leaderCardTop.rotated } : leaderCardTop);
+            }}
+          />
+          <DroppableBoardSlot key={`stage-top-${stageCardTop?.id ?? 'empty'}-${stageCardTop?.rotated}`} card={stageCardTop} slotType="STAGE" onDropCard={setStageCardTop} row={0} setHoveredCard={setHoveredCard}
+            onRotateCard={() => {
+              setStageCardTop(stageCardTop ? { ...stageCardTop, rotated: !stageCardTop.rotated } : stageCardTop);
+            }}
+          />
         </div>
         {/* LIFE - CHARACTER - LIFE row */}
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', width: '100%', position: 'relative' }}>
           {/* Left LIFE with label and buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 10 }}>
             <div style={{ color: '#ffe066', fontWeight: 800, fontSize: 16, marginBottom: 2, letterSpacing: 0.5, textShadow: '0 2px 8px #000, 0 0px 8px #ffe066' }}>Opponent Life</div>
             <div className="side-area life-area-left" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              background: 'rgba(30,30,30,0.38)',
-              borderRadius: 12,
-              padding: 4,
-              justifyContent: 'flex-start',
-              marginTop: 0,
-              marginBottom: 0,
-            }}>
+              display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 4, justifyContent: 'flex-start', marginTop: 0, marginBottom: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'row', gap: 4, marginBottom: 4, zIndex: 2000, position: 'relative', pointerEvents: 'auto' }}>
-                <button
-                  onClick={e => { e.stopPropagation(); handleAddLifeLeft(); }}
-                  style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}
-                >+</button>
-                <button
-                  onClick={e => { e.stopPropagation(); handleRemoveLifeLeft(); }}
-                  style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}
-                >-</button>
+                <button onClick={e => { e.stopPropagation(); handleAddLifeLeft(); }} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>+</button>
+                <button onClick={e => { e.stopPropagation(); handleRemoveLifeLeft(); }} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>-</button>
               </div>
               {lifeCardsLeft.map((card, i) => (
-                <DroppableBoardSlot
-                  key={i}
-                  card={card}
-                  slotType="LIFE"
-                  style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }}
-                  onDropCard={(droppedCard) => {
-                    setLifeCardsLeft(cards => {
-                      const newCards = [...cards];
-                      newCards[i] = droppedCard;
-                      return newCards;
-                    });
-                  }}
-                  setHoveredCard={setHoveredCard}
-                  onRotateCard={() => {
-                    // Toggle the rotated property for this LIFE card
-                    setLifeCardsLeft(cards => {
-                      const newCards = [...cards];
-                      if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated };
-                      return newCards;
-                    });
-                  }}
-                />
+                <DroppableBoardSlot key={i} card={card} slotType="LIFE" style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }} onDropCard={(droppedCard) => { setLifeCardsLeft(cards => { const newCards = [...cards]; newCards[i] = droppedCard; return newCards; }); }} setHoveredCard={setHoveredCard} onRotateCard={() => { setLifeCardsLeft(cards => { const newCards = [...cards]; if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated }; return newCards; }); }} />
               ))}
             </div>
           </div>
-          {/* Center CHARACTER grid */}
-          <div className="character-area" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 10, margin: '10px 0' }}>
+          {/* Center area with Opponent Hand and CHARACTER grid */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: '0 10px', flex: 1 }}>
+            {/* Opponent Hand box */}
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 4, marginBottom: 8 }}>
+              <span style={{ color: '#ffe066', fontWeight: 800, fontSize: 16, marginRight: 8 }}>Opponent Hand</span>
+              <button onClick={() => setOpponentHandSize(n => Math.max(0, n + 1))} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginRight: 4, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>+</button>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 20, width: 32, textAlign: 'center' }}>{opponentHandSize}</span>
+              <button onClick={() => setOpponentHandSize(n => Math.max(0, n - 1))} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginLeft: 4, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>-</button>
+            </div>
+            {/* CHARACTER grid */}
+          <div className="character-area" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 10, margin: '10px 0', position: 'relative' }}>
+            {/* Opponent Board (top row) */}
+            <div style={{ 
+              position: 'absolute', 
+              top: 'calc(55px - 0.5em)',
+              left: '-150px',
+              color: '#ffe066', 
+              fontWeight: 700, 
+              fontSize: 18,
+              zIndex: 10,
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}>
+              Opponent Board
+            </div>
+            {/* User Board (bottom row, aligned with bottom character row) */}
+            <div style={{
+              position: 'absolute',
+              top: 'calc(55px + 60px + 60px)',
+              left: '-120px',
+              color: '#ffe066',
+              fontWeight: 700,
+              fontSize: 18,
+              zIndex: 10,
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              height: '29px',
+            }}>
+              User Board
+            </div>
+            
+            {/* Character slots */}
             {characterCards.map((card, i) => (
-              <DroppableBoardSlot
-                key={i}
-                card={card}
-                slotType="CHARACTER"
-                row={i < 5 ? 0 : 1}
-                onDropCard={(droppedCard) => {
-                  setCharacterCards(cards => {
-                    const newCards = [...cards];
-                    newCards[i] = droppedCard;
-                    return newCards;
-                  });
-                }}
-                setHoveredCard={setHoveredCard}
-                onRotateCard={() => {
-                  // Toggle the rotated property for this character card
-                  setCharacterCards(cards => {
-                    const newCards = [...cards];
-                    if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated };
-                    return newCards;
-                  });
-                }}
-              />
+              <DroppableBoardSlot key={i} card={card} slotType="CHARACTER" row={i < 5 ? 0 : 1} onDropCard={(droppedCard) => { setCharacterCards(cards => { const newCards = [...cards]; newCards[i] = droppedCard; return newCards; }); }} setHoveredCard={setHoveredCard} onRotateCard={() => { setCharacterCards(cards => { const newCards = [...cards]; if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated }; return newCards; }); }} />
             ))}
+            
+            {/* Divider line between rows */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '-150px',
+              right: '-150px',
+              height: 2,
+              background: 'repeating-linear-gradient(to right, #ffe066 0px, #ffe066 8px, transparent 8px, transparent 16px)',
+              zIndex: 5,
+              transform: 'translateY(-50%)'
+            }} />
+          
+          </div>
+            {/* hand board */}
+            <div className="hand-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '12px 0', position: 'relative' }}>
+              {/* User Hand label for hand area */}
+              <div style={{
+                position: 'absolute',
+                top: 'calc(55px - 0.5em)',
+                left: '-120px',
+                color: '#ffe066',
+                fontWeight: 700,
+                fontSize: 18,
+                zIndex: 10,
+                whiteSpace: 'nowrap',
+                pointerEvents: 'none',
+              }}>
+                User Hand
+              </div>
+              {[0, 1].map(row => (
+                <div key={row} style={{ display: 'flex', gap: 10, marginBottom: row === 0 ? 8 : 0 }}>
+                  {[0, 1, 2, 3, 4].map(col => {
+                    const idx = row * 5 + col;
+                    return (
+                      <DroppableBoardSlot
+                        key={idx}
+                        card={handCards[idx]}
+                        slotType="HAND"
+                        style={{
+                          border: '2px dashed #ffe066',
+                          background: '#222',
+                          borderRadius: 12,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onDropCard={card => setHandCards(cards => { const newCards = [...cards]; newCards[idx] = card; return newCards; })}
+                        setHoveredCard={setHoveredCard}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
           {/* Right LIFE with label and buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 10 }}>
-            <div className="side-area life-area-right" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              background: 'rgba(30,30,30,0.38)',
-              borderRadius: 12,
-              padding: 4,
-              justifyContent: 'flex-end',
-              marginTop: 0,
-              marginBottom: 0,
-            }}>
+            <div className="side-area life-area-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 4, justifyContent: 'flex-end', marginTop: 0, marginBottom: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'row', gap: 4, marginBottom: 4, zIndex: 2000, position: 'relative', pointerEvents: 'auto' }}>
-                <button
-                  onClick={e => { e.stopPropagation(); handleAddLifeRight(); }}
-                  style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}
-                >+</button>
-                <button
-                  onClick={e => { e.stopPropagation(); handleRemoveLifeRight(); }}
-                  style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}
-                >-</button>
+                <button onClick={e => { e.stopPropagation(); handleAddLifeRight(); }} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>+</button>
+                <button onClick={e => { e.stopPropagation(); handleRemoveLifeRight(); }} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>-</button>
               </div>
               {lifeCardsRight.map((card, i) => (
-                <DroppableBoardSlot
-                  key={i}
-                  card={card}
-                  slotType="LIFE"
-                  style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }}
-                  onDropCard={(droppedCard) => {
-                    setLifeCardsRight(cards => {
-                      const newCards = [...cards];
-                      newCards[i] = droppedCard;
-                      return newCards;
-                    });
-                  }}
-                  setHoveredCard={setHoveredCard}
-                  onRotateCard={() => {
-                    // Toggle the rotated property for this LIFE card
-                    setLifeCardsRight(cards => {
-                      const newCards = [...cards];
-                      if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated };
-                      return newCards;
-                    });
-                  }}
-                />
-              )).reverse()}
+                <DroppableBoardSlot key={i} card={card} slotType="LIFE" style={{ width: 29, height: 29, marginBottom: i < 4 ? 2 : 0 }} onDropCard={(droppedCard) => { setLifeCardsRight(cards => { const newCards = [...cards]; newCards[i] = droppedCard; return newCards; }); }} setHoveredCard={setHoveredCard} onRotateCard={() => { setLifeCardsRight(cards => { const newCards = [...cards]; if (newCards[i]) newCards[i] = { ...newCards[i], rotated: !newCards[i].rotated }; return newCards; }); }} />
+              ))}
             </div>
             <div style={{ color: '#ffe066', fontWeight: 800, fontSize: 16, marginTop: 2, letterSpacing: 0.5, textShadow: '0 2px 8px #000, 0 0px 8px #ffe066' }}>User Life</div>
           </div>
         </div>
         {/* Bottom EVENT - LEADER - STAGE row */}
         <div className="leader-stage-area" style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
-          <DroppableBoardSlot card={eventCardBottom} slotType="EVENT" onDropCard={setEventCardBottom} row={1} setHoveredCard={setHoveredCard} onRotateCard={() => eventCardBottom && setEventCardBottom({ ...eventCardBottom, rotated: !eventCardBottom.rotated })} />
-          <DroppableBoardSlot card={leaderCardBottom} slotType="LEADER" onDropCard={setLeaderCardBottom} row={1} setHoveredCard={setHoveredCard} onRotateCard={() => leaderCardBottom && setLeaderCardBottom({ ...leaderCardBottom, rotated: !leaderCardBottom.rotated })} />
-          <DroppableBoardSlot card={stageCardBottom} slotType="STAGE" onDropCard={setStageCardBottom} row={1} setHoveredCard={setHoveredCard} onRotateCard={() => stageCardBottom && setStageCardBottom({ ...stageCardBottom, rotated: !stageCardBottom.rotated })} />
+          <DroppableBoardSlot key={`event-bottom-${eventCardBottom?.id ?? 'empty'}-${eventCardBottom?.rotated}`} card={eventCardBottom} slotType="EVENT" onDropCard={setEventCardBottom} row={1} setHoveredCard={setHoveredCard} />
+          <DroppableBoardSlot key={`leader-bottom-${leaderCardBottom?.id ?? 'empty'}-${leaderCardBottom?.rotated}`} card={leaderCardBottom} slotType="LEADER" onDropCard={setLeaderCardBottom} row={1} setHoveredCard={setHoveredCard}
+            onRotateCard={() => {
+              setLeaderCardBottom(leaderCardBottom ? { ...leaderCardBottom, rotated: !leaderCardBottom.rotated } : leaderCardBottom);
+            }}
+          />
+          <DroppableBoardSlot key={`stage-bottom-${stageCardBottom?.id ?? 'empty'}-${stageCardBottom?.rotated}`} card={stageCardBottom} slotType="STAGE" onDropCard={setStageCardBottom} row={1} setHoveredCard={setHoveredCard}
+            onRotateCard={() => {
+              setStageCardBottom(stageCardBottom ? { ...stageCardBottom, rotated: !stageCardBottom.rotated } : stageCardBottom);
+            }}
+          />
         </div>
         {/* Bottom DON!! row with + - buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '10px 0' }}>
           {/* DON!! + - group */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,30,30,0.38)', borderRadius: 12, padding: 4, marginRight: 8 }}>
-            <button onClick={handleAddDonBottom} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2 }}>+</button>
-            <button onClick={handleRemoveDonBottom} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20 }}>-</button>
+            <button onClick={handleAddDonBottom} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, marginBottom: 2, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>+</button>
+            <button onClick={handleRemoveDonBottom} style={{ borderRadius: '50%', width: 28, height: 28, fontWeight: 'bold', background: '#3578e6', color: '#fff', border: 'none', fontSize: 20, boxShadow: '0 2px 8px #3578e6aa', zIndex: 2001, pointerEvents: 'auto' }}>-</button>
           </div>
           <div className="don-area" style={{ display: 'flex', justifyContent: 'center' }}>
             {donCardsBottom.map((card, i) => (
               card ? (
                 <DroppableBoardSlot
-                  key={i}
+                  key={`don-bottom-${i}-${card.id}-${card.rotated}`}
                   card={card}
                   slotType="DON"
                   style={{ width: 80, height: 110, margin: 5, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -747,11 +786,13 @@ const GameBoard = ({
                   }}
                 />
               ) : (
-              <div key={i} className="card-slot don-slot">DON!!</div>
+              <div key={`don-bottom-empty-${i}`} className="card-slot don-slot">DON!!</div>
               )
             ))}
           </div>
         </div>
+        {/* Bottom HAND rows for user side */}
+        {/* Removed as per edit hint */}
       </div>
     </div>
   );
@@ -1046,6 +1087,23 @@ function fixCardData(card: any) {
 function fixCardArray(arr: any[]) {
   return (arr || []).filter(x => x !== null && x !== undefined).map(fixCardData);
 }
+// Add a utility to add 'rest' property to a card (for export/update), except for hand and event cards
+function addRestField(card: any, options?: { skipRest?: boolean }) {
+  if (!card) return card;
+  if (options && options.skipRest) return { ...card };
+  return { ...card, rest: !!card.rotated };
+}
+function addRestArray(arr: any[], options?: { skipRest?: boolean }) {
+  return (arr || []).filter(x => x !== null && x !== undefined).map(card => addRestField(card, options));
+}
+// Utility to remove 'rotated' property from hand cards
+function stripRotatedFromHand(arr: any[]) {
+  return (arr || []).filter(x => x !== null && x !== undefined).map(card => {
+    if (!card) return card;
+    const { rotated, ...rest } = card;
+    return rest;
+  });
+}
 
 // 1. In DeckBuilderPage, lift all board state up from GameBoard
 // 2. Pass all state and setters as props to GameBoard
@@ -1068,6 +1126,8 @@ const DeckBuilderPage = () => {
   const [stageCardBottom, setStageCardBottom] = useState<Card | null>(null);
   const [donCardsTop, setDonCardsTop] = useState(Array(9).fill(null));
   const [donCardsBottom, setDonCardsBottom] = useState(Array(9).fill(null));
+  const [handCards, setHandCards] = useState<(Card | null)[]>(Array(10).fill(null));
+  const [opponentHandSize, setOpponentHandSize] = useState<number>(0);
   // Add clearAll function here to reset all board state
   const clearAll = () => {
     setCharacterCards(Array(10).fill(null));
@@ -1081,6 +1141,23 @@ const DeckBuilderPage = () => {
     setStageCardBottom(null);
     setDonCardsTop(Array(9).fill(null));
     setDonCardsBottom(Array(9).fill(null));
+    setHandCards(Array(10).fill(null)); // Clear user hand
+    setOpponentHandSize(0); // Clear opponent hand size
+  };
+  // 实现 untapAll 功能
+  const untapAll = () => {
+    setCharacterCards(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setDonCardsTop(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setDonCardsBottom(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setHandCards(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setLifeCardsLeft(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setLifeCardsRight(cards => cards.map(card => card ? { ...card, rotated: false } : null));
+    setEventCardTop(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
+    setLeaderCardTop(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
+    setStageCardTop(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
+    setEventCardBottom(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
+    setLeaderCardBottom(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
+    setStageCardBottom(card => card ? { ...card, rotated: false, images: { ...card.images } } : null);
   };
   // State for backend analysis result
   // In DeckBuilderPage, remove agentAnalysis state and popup. Instead, send the board state as a message to the chat agent and display the response in the chat history.
@@ -1093,19 +1170,23 @@ const DeckBuilderPage = () => {
     const userState = {
       life: lifeCardsRight.filter(x => x !== null && x !== undefined).length,
       don: donCardsBottom.filter(x => x !== null && x !== undefined).length,
-      leader: fixCardData(leaderCardBottom) || null,
-      event: fixCardData(eventCardBottom) || null,
-      stage: stageCardBottom != null ? [fixCardData(stageCardBottom)] : [],
-      character: fixCardArray(characterCards.slice(5, 10)),
+      rested_don_count: donCardsBottom.filter(x => x && x.rotated).length,
+      leader: addRestField(fixCardData(leaderCardBottom)),
+      event: fixCardData(eventCardBottom), // No rest for event
+      stage: stageCardBottom != null ? [addRestField(fixCardData(stageCardBottom))] : [],
+      character: addRestArray(fixCardArray(characterCards.slice(5, 10))),
+      hand: stripRotatedFromHand(fixCardArray(handCards)), // Remove rotated from hand
     };
     // Opponent (top half)
     const opponentState = {
       life: lifeCardsLeft.filter(x => x !== null && x !== undefined).length,
       don: donCardsTop.filter(x => x !== null && x !== undefined).length,
-      leader: fixCardData(leaderCardTop) || null,
-      event: fixCardData(eventCardTop) || null,
-      stage: stageCardTop != null ? [fixCardData(stageCardTop)] : [],
-      character: fixCardArray(characterCards.slice(0, 5)),
+      rested_don_count: donCardsTop.filter(x => x && x.rotated).length,
+      hand_size: opponentHandSize,
+      leader: addRestField(fixCardData(leaderCardTop)),
+      event: fixCardData(eventCardTop), // No rest for event
+      stage: stageCardTop != null ? [addRestField(fixCardData(stageCardTop))] : [],
+      character: addRestArray(fixCardArray(characterCards.slice(0, 5))),
     };
     const gameState = {
       UserState: userState,
@@ -1154,7 +1235,10 @@ const DeckBuilderPage = () => {
           stageCardBottom={stageCardBottom} setStageCardBottom={setStageCardBottom}
           donCardsTop={donCardsTop} setDonCardsTop={setDonCardsTop}
           donCardsBottom={donCardsBottom} setDonCardsBottom={setDonCardsBottom}
+          handCards={handCards} setHandCards={setHandCards}
+          opponentHandSize={opponentHandSize} setOpponentHandSize={setOpponentHandSize}
           clearAll={clearAll}
+          untapAll={untapAll}
         />
         {/* Export/Update buttons fixed to the right, symmetric to Untap/Clear on the left */}
         <div style={{
@@ -1177,19 +1261,23 @@ const DeckBuilderPage = () => {
               const userState = {
                 life: lifeCardsRight.filter(x => x !== null).length,
                 don: donCardsBottom.filter(x => x !== null).length,
-                leader: leaderCardBottom,
-                event: eventCardBottom,
-                stage: stageCardBottom ? [stageCardBottom] : [], // ensure it's always an array
-                character: characterCards.slice(5, 10).filter(x => x !== null),
+                rested_don_count: donCardsBottom.filter(x => x && x.rotated).length,
+                leader: addRestField(leaderCardBottom),
+                event: fixCardData(eventCardBottom), // No rest for event
+                stage: stageCardBottom ? [addRestField(stageCardBottom)] : [],
+                character: addRestArray(characterCards.slice(5, 10)),
+                hand: stripRotatedFromHand(fixCardArray(handCards)), // Remove rotated from hand
               };
               // Opponent (top half)
               const opponentState = {
                 life: lifeCardsLeft.filter(x => x !== null).length,
                 don: donCardsTop.filter(x => x !== null).length,
-                leader: leaderCardTop,
-                event: eventCardTop,
-                stage: stageCardTop ? [stageCardTop] : [], // ensure it's always an array
-                character: characterCards.slice(0, 5).filter(x => x !== null),
+                rested_don_count: donCardsTop.filter(x => x && x.rotated).length,
+                leader: addRestField(leaderCardTop),
+                event: fixCardData(eventCardTop), // No rest for event
+                stage: stageCardTop ? [addRestField(stageCardTop)] : [],
+                character: addRestArray(characterCards.slice(0, 5)),
+                hand_size: opponentHandSize,
               };
               const gameState = {
                 UserState: userState,
