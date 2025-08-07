@@ -24,7 +24,7 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
 1. **Copy the environment template:**
    ```bash
    # Copy environment template
-   cp backend/example.env backend/.env
+   cp backend/.env.example backend/.env
    ```
 2. **Edit the `.env` in the `backend/` directory with your API keys.**
 3. **Start runtime:**
