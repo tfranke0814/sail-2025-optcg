@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from typing_extensions import TypedDict, Literal
+from langgraph.graph import MessagesState
+
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
@@ -72,10 +74,12 @@ class StateInput(TypedDict):
     message: str
     thread_id: str | None
 
-class State(TypedDict):
-    message: str
-    thread_id: str
-    board: dict # Replace with BoardState
+class State(MessagesState):
+    user_message: str
+    thread_id: str | None
+    board: Optional[dict]  # Optional since not all nodes need it immediately
+    extraction: Optional[List[str]]  # Optional since only set after extraction
+    retrieval: Optional[str]  # Add this for the retrieval results
 
 class ExtractorSchema(BaseModel):
     queries: List[str]
