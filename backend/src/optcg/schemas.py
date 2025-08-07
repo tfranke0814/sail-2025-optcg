@@ -76,3 +76,6 @@ class State(TypedDict):
     message: str
     thread_id: str
     board: dict # Replace with BoardState
+
+class ExtractorSchema(BaseModel):
+    queries: List[str]
