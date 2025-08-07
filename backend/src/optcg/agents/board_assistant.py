@@ -1,7 +1,7 @@
 import logging
 import uuid
 from typing import Literal
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langchain.chat_models import init_chat_model
 from langgraph.types import Command
 from langgraph.graph import StateGraph, START, END
@@ -26,17 +26,24 @@ llm_interpreter = init_chat_model(model="gpt-4.1", temperature=0)
 
 def boardstate_retrieval(state: State) -> Command[Literal["chat_agent", "extract_board"]]:
     board = get_board_tool_http.invoke("") # Replace tool later
+    if "messages" in state and state["messages"]:
+        messages = state["messages"]
+    else:
+        messages = []
+
     print(f"Board State Retrieved: {board}")
     if board.get("error"):
         logging.info(f"No Board State Found: {board['error']}")
         goto = "chat_agent"
         update = {
-            "board": board
+            "board": board,
+            "messages": messages.append({"role": "assistant", "content": "No board state found. Please update the board state first."})
         }
     else:
         goto = "extract_board"
         update = {
-            "board": board
+            "board": board,
+            "messages": messages.append({"role": "assistant", "content": "Board state retrieved successfully."})
         }
     return Command(goto=goto, update=update)
 
@@ -74,7 +81,7 @@ def rulebook_retriever(state: State) -> Command[Literal["llm_interpreter"]]:
 
     combined_results = "\n\n".join(results)
 
-    return Command(goto="llm_interpreter", update={"rulebook_info": combined_results})
+    return Command(goto="llm_interpreter", update={"retrieval": combined_results})
 
 def llm_interpretation(state: State) -> Command[Literal["__end__"]]:
     """Interprets the user's message using the rulebook information and board state."""
@@ -109,7 +116,7 @@ def llm_interpretation(state: State) -> Command[Literal["__end__"]]:
     output = [{"role": "user", "content": state["user_message"]}, {"role": "assistant", "content": response.content}]
 
     return Command(
-        goto="END", 
+        goto="__end__", 
         update={
             "messages": output
         }

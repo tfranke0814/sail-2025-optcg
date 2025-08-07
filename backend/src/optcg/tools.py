@@ -68,10 +68,10 @@ def get_board_tool_http() -> dict:
     Returns:
       The current board state as a JSON object or an error message if no board state is set."""
     response = None
+    print("Getting board state via HTTP...")
     try:
-        response = requests.get(
-            f"{api_base_url}/board/"
-        )
+        url = f"{api_base_url}/board/"
+        response = requests.get(url)
         response.raise_for_status()
     except requests.RequestException as e:
         logging.exception(f"Exception in get_board_tool: {str(e)}")

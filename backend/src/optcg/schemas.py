@@ -71,7 +71,7 @@ class BoardState(BaseModel):
 
 # Schema for state for board_assistant
 class StateInput(TypedDict):
-    message: str
+    user_message: str
     thread_id: str | None
 
 class State(MessagesState):
@@ -79,7 +79,7 @@ class State(MessagesState):
     thread_id: str | None
     board: Optional[dict]  # Optional since not all nodes need it immediately
     extraction: Optional[List[str]]  # Optional since only set after extraction
-    retrieval: Optional[str]  # Add this for the retrieval results
+    retrieval: Optional[str] 
 
 class ExtractorSchema(BaseModel):
     queries: List[str]
