@@ -23,6 +23,8 @@ llm_extractor = llm_extractor.with_structured_output(ExtractorSchema)
 retriever = create_rulebook_retriever_tool()
 
 llm_interpreter = init_chat_model(model="gpt-4.1", temperature=0)
+def boardstate_router(state: StateInput) -> Command[Literal["chat_agent", "retrieve_board"]]:
+    pass
 
 def boardstate_retrieval(state: State) -> Command[Literal["chat_agent", "extract_board"]]:
     board = get_board_tool_http.invoke("") # Replace tool later
@@ -126,13 +128,14 @@ chat = ChatAgent()
 # Define the agent builder for extraction
 agent_builder = StateGraph(State, input_type=StateInput)
 
+agent_builder.add_node("router", boardstate_router)
 agent_builder.add_node("retrieve_board", boardstate_retrieval)
 agent_builder.add_node("extract_board", extract_board_state)
 agent_builder.add_node("rule_retriever", rulebook_retriever)
 agent_builder.add_node("llm_interpreter", llm_interpretation)
 agent_builder.add_node("chat_agent", chat.agent)
 
-agent_builder.add_edge(START, "retrieve_board")
+agent_builder.add_edge(START, "router")
 ## agent_builder.add_edge("retrieve_board", "extract_board")
 # # agent_builder.add_edge("retrieve_board", "chat_agent")
 # # agent_builder.add_edge("extract_board", "chat_agent")
