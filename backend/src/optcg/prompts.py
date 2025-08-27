@@ -42,35 +42,55 @@ Your role is to determine whether the user's question can be answered using just
 </ Role >
 
 < Instructions >
-Return a boolean of whether to continue with extraction.
-- true => Continue with extraction and retrieval of relevant rulebook information
-- false => Stop extraction and return just the board state.
+Return a boolean of whether to continue with rule retrieval.
+- true => Continue with retrieval of relevant rulebook information
+- false => No extra rules needed, answer using just the board state
 </ Instructions >
-
-< Rules >
-1. If the user's question can be answered using only the current board state, return false.
-2. If the user's question requires additional information from the rulebook, return true.
-</ Rules >
 
 < Examples >
 Input: "What is the current board state?"
-Output: {"continue_extraction": false}
+Output: {"rule_retrieval": false}
 
 Input: "How should I attack this turn?"
-Output: {"continue_extraction": true}
+Output: {"rule_retrieval": true}
 
 Input: "How many cards are in the opponent's hand?"
-Output: {"continue_extraction": false}
+Output: {"rule_retrieval": false}
 
 Input: "How should I play this card?"
-Output: {"continue_extraction": true}
+Output: {"rule_retrieval": true}
 
 Input: "What are the rules for using DON!! cards?"
-Output: {"continue_extraction": true}
+Output: {"rule_retrieval": true}
+
+Input: "What characters does my opponent have in play and what is my leader?"
+Output: {"rule_retrieval": false}
 </ Examples >
 """
 
 extraction_router_user_prompt = """
+< User Question >
+{question}
+</ User Question >
+"""
+
+state_summary_system_prompt = """
+< Role >
+You are a helpful assistant that summarizes the current board state for One Piece TCG.
+</ Role >
+
+< Instructions >
+When summarizing the board state, focus on the key elements that would impact gameplay, such as life points, DON!! count, cards in play, and any significant effects or statuses. Keep the summary concise and relevant to the user's potential questions about gameplay.
+
+Take into account the user's question when summarizing the board state to ensure the summary is tailored to their needs.
+</ Instructions >
+"""
+
+state_summary_user_prompt = """
+< Board State >
+{board}
+</ Board State >
+
 < User Question >
 {question}
 </ User Question >

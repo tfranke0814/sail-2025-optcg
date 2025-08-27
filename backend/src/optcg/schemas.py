@@ -83,4 +83,4 @@ class ExtractorSchema(BaseModel):
     queries: List[str]
 
 class ExtractorRouterSchema(BaseModel):
-    continue_extraction: bool
+    rule_retrieval: bool

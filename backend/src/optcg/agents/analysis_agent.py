@@ -11,14 +11,16 @@ from langgraph.checkpoint.memory import InMemorySaver
 from optcg.schemas import ExtractorSchema, ExtractorStateInput, ExtractorState, ExtractorRouterSchema
 from optcg.tools import create_rulebook_retriever_tool, get_board_tool, get_board_tool_http
 from optcg.agents.react import ChatAgent
-from optcg.prompts import extraction_system_prompt, extraction_user_prompt, advisor_system_prompt, advisor_user_prompt, extraction_router_system_prompt, extraction_router_user_prompt
+from optcg.prompts import extraction_system_prompt, extraction_user_prompt, advisor_system_prompt, advisor_user_prompt, extraction_router_system_prompt, extraction_router_user_prompt, state_summary_system_prompt, state_summary_user_prompt
 
 from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-llm_router = init_chat_model(model="gpt-4.1", temperature=0)
+llm_router = init_chat_model(model="openai:gpt-5-nano")
 llm_router = llm_router.with_structured_output(ExtractorRouterSchema)
+
+llm_state_summarizer = init_chat_model(model="openai:gpt-5-nano")
 
 llm_extractor = init_chat_model(model="gpt-4.1", temperature=0)
 llm_extractor = llm_extractor.with_structured_output(ExtractorSchema)
@@ -44,13 +46,12 @@ def boardstate_retrieval(state: ExtractorStateInput) -> Command[Literal["router"
     else:
         goto = "router"
         update = {
-            "thread_id": thread_id,
             "board": board
             }
     return Command(goto=goto, update=update)
 
-def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board", "__end__"]]:
-        # Format user prompt with board and question
+def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board", "summarize_board"]]:
+    # Format user prompt with board and question
     user_prompt = extraction_router_user_prompt.format(
         question=state["user_message"]
     )
@@ -63,17 +64,35 @@ def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board",
             {"role": "user", "content": user_prompt},
         ]
     )
-    print(result, type(result))
-    if result.continue_extraction: # type: ignore
+    
+    if result.rule_retrieval: # type: ignore
         goto = "extract_board"
         updates = {}
     else:
-        goto = "__end__"
-        updates = {
-            "response": f"< BOARD STATE >{state['board']}</ BOARD STATE >"
-        }
-
+        goto = "summarize_board"
+        updates = {}
     return Command(goto=goto, update=updates)
+
+def summarize_board_state(state: ExtractorState) -> Command[Literal["__end__"]]:
+    """Summarizes the board state for the user."""
+    board = state["board"]
+    if not board:
+        return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "No board state available."}]})
+
+    user_prompt = state_summary_user_prompt.format(
+        board=board, 
+        question=state["user_message"]
+    )
+
+    system_prompt = state_summary_system_prompt
+
+    summary = llm_state_summarizer.invoke([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+    )
+
+    return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": summary.content}]})
 
 def extract_board_state(state: ExtractorState) -> Command[Literal["rule_retriever"]]:
     """Extracts the board state from the input state."""
@@ -140,6 +159,7 @@ def advisor(state: ExtractorState) -> Command[Literal["__end__"]]:
 agent_builder = StateGraph(ExtractorState, input_schema=ExtractorStateInput)
 agent_builder.add_node("router", boardstate_router)
 agent_builder.add_node("retrieve_board", boardstate_retrieval)
+agent_builder.add_node("summarize_board", summarize_board_state)
 agent_builder.add_node("extract_board", extract_board_state)
 agent_builder.add_node("rule_retriever", rulebook_retriever)
 agent_builder.add_node("advisor", advisor)
