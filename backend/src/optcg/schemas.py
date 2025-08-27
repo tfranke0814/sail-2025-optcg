@@ -70,16 +70,17 @@ class BoardState(BaseModel):
     OpponentState: PlayerState
 
 # Schema for state for board_assistant
-class StateInput(TypedDict):
+class ExtractorStateInput(MessagesState):
     user_message: str
-    thread_id: str | None
 
-class State(MessagesState):
+class ExtractorState(MessagesState):
     user_message: str
-    thread_id: str | None
-    board: Optional[dict]  # Optional since not all nodes need it immediately
-    extraction: Optional[List[str]]  # Optional since only set after extraction
+    board: dict | None
+    extraction: Optional[List[str]]
     retrieval: Optional[str] 
 
 class ExtractorSchema(BaseModel):
     queries: List[str]
+
+class ExtractorRouterSchema(BaseModel):
+    continue_extraction: bool

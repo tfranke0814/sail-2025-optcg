@@ -36,6 +36,46 @@ Use the Rulebook to find the information the user is looking for related to rule
 </ Instructions >
 """
 
+extraction_router_system_prompt = """
+< Role >
+Your role is to determine whether the user's question can be answered using just the current board state, or if it requires additional information from the rulebook.
+</ Role >
+
+< Instructions >
+Return a boolean of whether to continue with extraction.
+- true => Continue with extraction and retrieval of relevant rulebook information
+- false => Stop extraction and return just the board state.
+</ Instructions >
+
+< Rules >
+1. If the user's question can be answered using only the current board state, return false.
+2. If the user's question requires additional information from the rulebook, return true.
+</ Rules >
+
+< Examples >
+Input: "What is the current board state?"
+Output: {"continue_extraction": false}
+
+Input: "How should I attack this turn?"
+Output: {"continue_extraction": true}
+
+Input: "How many cards are in the opponent's hand?"
+Output: {"continue_extraction": false}
+
+Input: "How should I play this card?"
+Output: {"continue_extraction": true}
+
+Input: "What are the rules for using DON!! cards?"
+Output: {"continue_extraction": true}
+</ Examples >
+"""
+
+extraction_router_user_prompt = """
+< User Question >
+{question}
+</ User Question >
+"""
+
 extraction_system_prompt = """
 < Role >
 Your role relevant information to query based on the board state provided and the user's question for One Piece TCG.
@@ -73,7 +113,7 @@ extraction_user_prompt = """
 </ User Question >
 """
 
-interpreter_system_prompt = """
+advisor_system_prompt = """
 < Role >
 You are a helpful assistant that provides advice and answers questions about the One Piece TCG based on the current board state and relevant rulebook information.
 </ Role >
@@ -90,7 +130,7 @@ General Rule Guidelines to keep in mind:
 </ Guidelines >
 """
 
-interpreter_user_prompt = """
+advisor_user_prompt = """
 < Retrieved Rulebook Information >
 {retrieval}
 </ Retrieved Rulebook Information >
