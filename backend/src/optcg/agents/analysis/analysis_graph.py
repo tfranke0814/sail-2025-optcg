@@ -8,28 +8,27 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import InMemorySaver
 
 # Custom Imports
-from optcg.schemas import ExtractorSchema, ExtractorStateInput, ExtractorState, ExtractorRouterSchema
+from .analysis_schemas import AnalysisExtractorSchema, AnalysisStateInput, AnalysisState, AnalysisRouterSchema
 from optcg.tools import create_rulebook_retriever_tool, get_board_tool, get_board_tool_http
-from optcg.agents.react import ChatAgent
-from optcg.prompts import extraction_system_prompt, extraction_user_prompt, advisor_system_prompt, advisor_user_prompt, extraction_router_system_prompt, extraction_router_user_prompt, state_summary_system_prompt, state_summary_user_prompt
+from .analysis_prompts import ANALYSIS_EXTRACTION_SYSTEM_PROMPT, ANALYSIS_EXTRACTION_USER_PROMPT, ANALYSIS_ADVISOR_SYSTEM_PROMPT, ANALYSIS_ADVISOR_USER_PROMPT, ANALYSIS_ROUTER_SYSTEM_PROMPT, ANALYSIS_ROUTER_USER_PROMPT, ANALYSIS_STATE_SUMMARY_SYSTEM_PROMPT, ANALYSIS_STATE_SUMMARY_USER_PROMPT
 
 from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
 llm_router = init_chat_model(model="openai:gpt-5-nano")
-llm_router = llm_router.with_structured_output(ExtractorRouterSchema)
+llm_router = llm_router.with_structured_output(AnalysisRouterSchema)
 
 llm_state_summarizer = init_chat_model(model="openai:gpt-5-nano")
 
 llm_extractor = init_chat_model(model="gpt-4.1", temperature=0)
-llm_extractor = llm_extractor.with_structured_output(ExtractorSchema)
+llm_extractor = llm_extractor.with_structured_output(AnalysisExtractorSchema)
 
 retriever = create_rulebook_retriever_tool()
 
 llm_advisor = init_chat_model(model="openai:gpt-5-mini")
 
-def boardstate_retrieval(state: ExtractorStateInput) -> Command[Literal["router", "__end__"]]:
+def boardstate_retrieval(state: AnalysisStateInput) -> Command[Literal["router", "__end__"]]:
     board = get_board_tool_http.invoke("") # Replace tool later
 
     no_board_msg = {
@@ -50,14 +49,14 @@ def boardstate_retrieval(state: ExtractorStateInput) -> Command[Literal["router"
             }
     return Command(goto=goto, update=update)
 
-def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board", "summarize_board"]]:
+def boardstate_router(state: AnalysisState) -> Command[Literal["extract_board", "summarize_board"]]:
     # Format user prompt with board and question
-    user_prompt = extraction_router_user_prompt.format(
+    user_prompt = ANALYSIS_ROUTER_USER_PROMPT.format(
         question=state["user_message"]
     )
 
     # System prompt
-    system_prompt = extraction_router_system_prompt
+    system_prompt = ANALYSIS_ROUTER_SYSTEM_PROMPT
 
     result = llm_router.invoke([
             {"role": "system", "content": system_prompt},
@@ -73,19 +72,19 @@ def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board",
         updates = {}
     return Command(goto=goto, update=updates)
 
-def summarize_board_state(state: ExtractorState) -> Command[Literal["__end__"]]:
+def summarize_board_state(state: AnalysisState) -> Command[Literal["__end__"]]:
     """Summarizes the board state for the user."""
     logging.info(f"Summarizing board state for user question")
     board = state["board"]
     if not board:
         return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "No board state available."}]})
 
-    user_prompt = state_summary_user_prompt.format(
+    user_prompt = ANALYSIS_STATE_SUMMARY_USER_PROMPT.format(
         board=board, 
         question=state["user_message"]
     )
 
-    system_prompt = state_summary_system_prompt
+    system_prompt = ANALYSIS_STATE_SUMMARY_SYSTEM_PROMPT
 
     summary = llm_state_summarizer.invoke([
             {"role": "system", "content": system_prompt},
@@ -95,26 +94,26 @@ def summarize_board_state(state: ExtractorState) -> Command[Literal["__end__"]]:
 
     return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": summary.content}]})
 
-def extract_board_state(state: ExtractorState) -> Command[Literal["rule_retriever"]]:
+def extract_board_state(state: AnalysisState) -> Command[Literal["rule_retriever"]]:
     """Extracts the board state from the input state."""
     # Format user prompt with board and question
     logging.info(f"Extracting board state for user question")
-    user_prompt = extraction_user_prompt.format(
+    user_prompt = ANALYSIS_EXTRACTION_USER_PROMPT.format(
         board=state["board"], question=state["user_message"]
     )
 
     # System prompt
-    system_prompt = extraction_system_prompt
+    system_prompt = ANALYSIS_EXTRACTION_SYSTEM_PROMPT
 
     extraction = llm_extractor.invoke([
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
     )
-    logging.info(f"Extracted queries: {extraction.queries}")
+    logging.info(f"Extracted queries: {extraction.queries}") # type: ignore
     return Command(goto="rule_retriever", update={"extraction": extraction.queries}) # type: ignore
 
-def rulebook_retriever(state: ExtractorState) -> Command[Literal["advisor"]]:
+def rulebook_retriever(state: AnalysisState) -> Command[Literal["advisor"]]:
     """Uses the rulebook retriever to get relevant information based on extracted queries."""
     queries = state["extraction"]
     results = []
@@ -126,15 +125,15 @@ def rulebook_retriever(state: ExtractorState) -> Command[Literal["advisor"]]:
 
     return Command(goto="advisor", update={"retrieval": combined_results})
 
-def advisor(state: ExtractorState) -> Command[Literal["__end__"]]:
+def advisor(state: AnalysisState) -> Command[Literal["__end__"]]:
     """Interprets the user's message using the rulebook information and board state."""
     # Create the prompt for the LLM
-    user_prompt = advisor_user_prompt.format(
+    user_prompt = ANALYSIS_ADVISOR_USER_PROMPT.format(
         board=state["board"],
         question=state["user_message"]
     )
 
-    system_prompt = advisor_system_prompt.format(
+    system_prompt = ANALYSIS_ADVISOR_SYSTEM_PROMPT.format(
         retrieval=state["retrieval"]
     )
 
@@ -151,7 +150,7 @@ def advisor(state: ExtractorState) -> Command[Literal["__end__"]]:
 
 
 # Define the agent builder for extraction
-agent_builder = StateGraph(ExtractorState, input_schema=ExtractorStateInput)
+agent_builder = StateGraph(AnalysisState, input_schema=AnalysisStateInput)
 agent_builder.add_node("router", boardstate_router)
 agent_builder.add_node("retrieve_board", boardstate_retrieval)
 agent_builder.add_node("summarize_board", summarize_board_state)
@@ -161,4 +160,4 @@ agent_builder.add_node("advisor", advisor)
 
 agent_builder.add_edge(START, "retrieve_board")
 
-agent = agent_builder.compile(checkpointer=InMemorySaver())
+analysis_agent = agent_builder.compile(checkpointer=InMemorySaver())

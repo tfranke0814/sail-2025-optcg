@@ -10,7 +10,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 # Custom Imports
 from optcg.tools import create_rulebook_retriever_tool, get_board_tool
-from optcg.prompts import chat_agent_prompt, rulebook_agent_prompt
+from .react_prompts import CHAT_AGENT_PROMPT, RULEBOOK_AGENT_PROMPT
 
 
 ## This file defines the base agent class for the optcg project.
@@ -120,7 +120,7 @@ class ChatAgent(BaseAgent):
         super().__init__(model_name=model_name, temperature=0)
     
     def _create_prompt(self):
-        return chat_agent_prompt
+        return CHAT_AGENT_PROMPT
 
     def _setup_tools(self):
         return [
@@ -138,7 +138,7 @@ class RulebookAgent(BaseAgent):
         super().__init__(model_name=model_name, temperature=0)
     
     def _create_prompt(self):
-        return rulebook_agent_prompt
+        return RULEBOOK_AGENT_PROMPT
 
     def _setup_tools(self):
         return [

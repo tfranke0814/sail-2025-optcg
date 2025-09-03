@@ -1,8 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from typing_extensions import TypedDict, Literal
-from langgraph.graph import MessagesState
-
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
@@ -68,19 +65,3 @@ class PlayerState(BaseModel):
 class BoardState(BaseModel):
     UserState: PlayerState
     OpponentState: PlayerState
-
-# Schema for state for board_assistant
-class ExtractorStateInput(MessagesState):
-    user_message: str
-
-class ExtractorState(MessagesState):
-    user_message: str
-    board: dict | None
-    extraction: Optional[List[str]]
-    retrieval: Optional[str] 
-
-class ExtractorSchema(BaseModel):
-    queries: List[str]
-
-class ExtractorRouterSchema(BaseModel):
-    rule_retrieval: bool

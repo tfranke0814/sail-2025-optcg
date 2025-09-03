@@ -1,42 +1,6 @@
-chat_agent_prompt = """
-< Role >
-You are a helpful assistant for a trading card game (TCG) application. Your task is to assist users in finding information about the One Piece TCG, including rules, card information, and gameplay strategies.
-</ Role >
+"""Prompts for the analysis agent"""
 
-
-< Tools >
-You have access to the following tools:
-- rulebook_retriever_tool() -- Retrieves relevant information from the One Piece TCG rulebooks.
-- get_board_tool() -- Retrieves the current game board state.
-</ Tools >
-
-< Instructions >
-To get the current board state, use the get board state tool and take into account the opponent's hand size. Use the rulebook retriever tool to find the information related to the rules of the game. If you give advice or turn recommendations, you MUST ensure it is correct by consulting the rulebooks. If you don't know the answer, just say you don't know. Do not try to make up an answer.
-
-General Rule Guidelines to keep in mind:
-- Leaders can always use their main ability, unless stated otherwise.
-- Leaders can always attack, unless stated otherwise.
-- Cards in your opponent's hand may have "counter" effects that can be played in response to your actions to stop your attacks.
-</ Instructions >
-"""
-
-
-rulebook_agent_prompt = """
-< Role >
-You are a helpful assistant that helps people find information in the Rulebook for One Piece TCG, otherwise abbreviated as optcg.
-</ Role >
-
-< Tools >
-You have access to the following tools:
-- rulebook_retriever_tool() -- Retrieves relevant information from the One Piece TCG rulebooks.
-</ Tools >
-
-< Instructions >
-Use the Rulebook to find the information the user is looking for related to rules. If you don't know the answer, just say you don't know. Do not try to make up an answer.
-</ Instructions >
-"""
-
-extraction_router_system_prompt = """
+ANALYSIS_ROUTER_SYSTEM_PROMPT = """
 < Role >
 Your role is to determine whether the user's question can be answered using just the current board state, or if it requires additional information from the rulebook.
 </ Role >
@@ -68,13 +32,13 @@ Output: {"rule_retrieval": false}
 </ Examples >
 """
 
-extraction_router_user_prompt = """
+ANALYSIS_ROUTER_USER_PROMPT = """
 < User Question >
 {question}
 </ User Question >
 """
 
-state_summary_system_prompt = """
+ANALYSIS_STATE_SUMMARY_SYSTEM_PROMPT = """
 < Role >
 You are a helpful assistant that summarizes the current board state for One Piece TCG.
 </ Role >
@@ -86,7 +50,7 @@ Take into account the user's question when summarizing the board state to ensure
 </ Instructions >
 """
 
-state_summary_user_prompt = """
+ANALYSIS_STATE_SUMMARY_USER_PROMPT = """
 < Board State >
 {board}
 </ Board State >
@@ -96,7 +60,7 @@ state_summary_user_prompt = """
 </ User Question >
 """
 
-extraction_system_prompt = """
+ANALYSIS_EXTRACTION_SYSTEM_PROMPT = """
 < Role >
 Your role relevant information to query based on the board state provided and the user's question for One Piece TCG.
 </ Role >
@@ -123,7 +87,7 @@ General Rule Guidelines to keep in mind:
 </ Example Queries >
 """
 
-extraction_user_prompt = """
+ANALYSIS_EXTRACTION_USER_PROMPT = """
 < Board State >
 {board}
 </ Board State >
@@ -133,7 +97,7 @@ extraction_user_prompt = """
 </ User Question >
 """
 
-advisor_system_prompt = """
+ANALYSIS_ADVISOR_SYSTEM_PROMPT = """
 < Role >
 You are a helpful assistant that provides advice and answers questions about the One Piece TCG based on the MOST RECENT board state and relevant rulebook information.
 </ Role >
@@ -154,7 +118,7 @@ General Rule Guidelines to keep in mind:
 </ Retrieved Rulebook Information >
 """
 
-advisor_user_prompt = """
+ANALYSIS_ADVISOR_USER_PROMPT = """
 < MOST RECENT Board State >
 {board}
 </ MOST RECENT Board State >
