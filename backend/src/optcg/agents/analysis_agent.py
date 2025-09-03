@@ -27,7 +27,7 @@ llm_extractor = llm_extractor.with_structured_output(ExtractorSchema)
 
 retriever = create_rulebook_retriever_tool()
 
-llm_advisor = init_chat_model(model="gpt-4.1", temperature=0)
+llm_advisor = init_chat_model(model="openai:gpt-5-mini")
 
 def boardstate_retrieval(state: ExtractorStateInput) -> Command[Literal["router", "__end__"]]:
     board = get_board_tool_http.invoke("") # Replace tool later
@@ -75,6 +75,7 @@ def boardstate_router(state: ExtractorState) -> Command[Literal["extract_board",
 
 def summarize_board_state(state: ExtractorState) -> Command[Literal["__end__"]]:
     """Summarizes the board state for the user."""
+    logging.info(f"Summarizing board state for user question")
     board = state["board"]
     if not board:
         return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "No board state available."}]})
@@ -97,6 +98,7 @@ def summarize_board_state(state: ExtractorState) -> Command[Literal["__end__"]]:
 def extract_board_state(state: ExtractorState) -> Command[Literal["rule_retriever"]]:
     """Extracts the board state from the input state."""
     # Format user prompt with board and question
+    logging.info(f"Extracting board state for user question")
     user_prompt = extraction_user_prompt.format(
         board=state["board"], question=state["user_message"]
     )
@@ -109,7 +111,7 @@ def extract_board_state(state: ExtractorState) -> Command[Literal["rule_retrieve
             {"role": "user", "content": user_prompt},
         ]
     )
-    print(extraction.queries) # type: ignore
+    logging.info(f"Extracted queries: {extraction.queries}")
     return Command(goto="rule_retriever", update={"extraction": extraction.queries}) # type: ignore
 
 def rulebook_retriever(state: ExtractorState) -> Command[Literal["advisor"]]:
@@ -129,28 +131,21 @@ def advisor(state: ExtractorState) -> Command[Literal["__end__"]]:
     # Create the prompt for the LLM
     user_prompt = advisor_user_prompt.format(
         board=state["board"],
-        retrieval=state["retrieval"],
         question=state["user_message"]
     )
 
-    system_prompt = advisor_system_prompt
+    system_prompt = advisor_system_prompt.format(
+        retrieval=state["retrieval"]
+    )
 
-    messages = [{"role": "system", "content": system_prompt}]
+    messages = [{"role": "system", "content": system_prompt}] + state["messages"] + [{"role": "user", "content": user_prompt}]
 
-    if "messages" in state and state["messages"]:
-        messages.extend(state["messages"])
-
-
-    messages.append({"role": "user", "content": user_prompt})
-
-    response = llm_advisor.invoke(messages, config=config)
-
-    output = [{"role": "user", "content": state["user_message"]}, {"role": "assistant", "content": response.content}]
+    response = llm_advisor.invoke(messages)
 
     return Command(
         goto="__end__", 
         update={
-            "messages": output
+            "messages": state["messages"] + [{"role": "assistant", "content": response.content}]
         }
     )
 
