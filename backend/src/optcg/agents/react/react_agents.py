@@ -9,7 +9,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import InMemorySaver
 
 # Custom Imports
-from optcg.tools import create_rulebook_retriever_tool, get_board_tool
+from ..tools import create_rulebook_retriever_tool, get_board_tool, transfer_to_board_analyst
 from .react_prompts import CHAT_AGENT_PROMPT, RULEBOOK_AGENT_PROMPT
 
 
@@ -116,7 +116,7 @@ class BaseAgent(ABC):
 # region ChatAgent Class
 class ChatAgent(BaseAgent):
     def __init__(self, model_name="gpt-4.1"):
-        self.name = "ChatAgent"
+        self.name = "chat_agent"
         super().__init__(model_name=model_name, temperature=0)
     
     def _create_prompt(self):
@@ -124,8 +124,7 @@ class ChatAgent(BaseAgent):
 
     def _setup_tools(self):
         return [
-            create_rulebook_retriever_tool(), 
-            get_board_tool
+            transfer_to_board_analyst
         ]
 # endregion ChatAgent Class
 

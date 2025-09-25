@@ -11,7 +11,7 @@ from langgraph.graph import StateGraph, START
 from langgraph.checkpoint.memory import InMemorySaver
 
 # Custom Imports
-from optcg.tools import create_rulebook_retriever_tool, get_board_tool_http
+from ..tools import create_rulebook_retriever_tool, get_board_tool_http
 from .analysis_schemas import (AnalysisStateInput, AnalysisState, 
                                AnalysisRouterSchema, AnalysisExtractorSchema)
 from .analysis_prompts import (ANALYSIS_ROUTER_SYSTEM_PROMPT, ANALYSIS_ROUTER_USER_PROMPT, 
