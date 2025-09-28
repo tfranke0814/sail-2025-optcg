@@ -9,9 +9,7 @@ from langgraph.graph import MessagesState
 
 # Custom Imports
 from .analysis import analysis_agent
-from .react import ChatAgent
-
-chat_agent = ChatAgent().agent
+from .react import chat_agent
 
 # Define the multi-agent graph
 multi_agent_graph = (

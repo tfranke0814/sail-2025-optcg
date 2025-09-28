@@ -1,9 +1,8 @@
 """React Style Agents"""
 
-from .react_agents import BaseAgent, RulebookAgent, ChatAgent
+from .react_agents import chat_agent, rulebook_agent
 
 __all__ = [
-    "BaseAgent", 
-    "RulebookAgent", 
-    "ChatAgent"
+    "chat_agent",
+    "rulebook_agent"
     ]
