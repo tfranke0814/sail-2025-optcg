@@ -7,22 +7,17 @@ import logging
 from typing import Literal
 from langchain.chat_models import init_chat_model
 from langgraph.types import Command
-from langgraph.graph import StateGraph, START
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import StateGraph, START, MessagesState
 
 # Custom Imports
 from ..tools import create_rulebook_retriever_tool, get_board_tool_http
-from .analysis_schemas import (AnalysisStateInput, AnalysisState, 
-                               AnalysisRouterSchema, AnalysisExtractorSchema)
+from ..utils import get_latest_user_message
+from .analysis_schemas import AnalysisState, AnalysisRouterSchema, AnalysisExtractorSchema
 from .analysis_prompts import (ANALYSIS_ROUTER_SYSTEM_PROMPT, ANALYSIS_ROUTER_USER_PROMPT, 
                                ANALYSIS_STATE_SUMMARY_SYSTEM_PROMPT, ANALYSIS_STATE_SUMMARY_USER_PROMPT, 
                                ANALYSIS_EXTRACTION_SYSTEM_PROMPT, ANALYSIS_EXTRACTION_USER_PROMPT, 
                                ANALYSIS_ADVISOR_SYSTEM_PROMPT, ANALYSIS_ADVISOR_USER_PROMPT
 )
-
-from dotenv import load_dotenv
-# Load environment variables
-load_dotenv()
 
 # Initialize LLMs
 llm_router = init_chat_model(model="openai:gpt-5-nano")
@@ -38,7 +33,7 @@ retriever = create_rulebook_retriever_tool()
 llm_advisor = init_chat_model(model="openai:gpt-5-mini")
 
 # Define the functions for each node in the state graph
-def boardstate_retrieval(state: AnalysisStateInput) -> Command[Literal["router", "__end__"]]:
+def boardstate_retrieval(state: MessagesState) -> Command[Literal["router", "__end__"]]:
     """Retrieves the current board state using the get_board_tool."""
 
     board = get_board_tool_http.invoke("") # TODO: Replace tool later
@@ -49,7 +44,7 @@ def boardstate_retrieval(state: AnalysisStateInput) -> Command[Literal["router",
             "board": None,
             "messages": state["messages"] + [{
                 "role": "assistant",
-                "content": "No board state was found. Please update the board state.",
+                "content": "There was an attempt to retrieve the board state, but none was found. Please update the board state and try again.",
             }]
         }
         logging.info("No board state found for user. Was it updated?")
@@ -64,7 +59,7 @@ def boardstate_router(state: AnalysisState) -> Command[Literal["extract_board", 
     """Decides whether to extract detailed information from the board state or to summarize it based on the user's question."""
 
     user_prompt = ANALYSIS_ROUTER_USER_PROMPT.format(
-        question=state["user_message"]
+        question=get_latest_user_message(state)
     )
 
     system_prompt = ANALYSIS_ROUTER_SYSTEM_PROMPT
@@ -93,7 +88,7 @@ def summarize_board_state(state: AnalysisState) -> Command[Literal["__end__"]]:
 
     user_prompt = ANALYSIS_STATE_SUMMARY_USER_PROMPT.format(
         board=state["board"],
-        question=state["user_message"]
+        question=get_latest_user_message(state)
     )
 
     system_prompt = ANALYSIS_STATE_SUMMARY_SYSTEM_PROMPT
@@ -115,7 +110,7 @@ def extract_board_state(state: AnalysisState) -> Command[Literal["rule_retriever
         return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "(Error) No board state available."}]}) # type: ignore
 
     user_prompt = ANALYSIS_EXTRACTION_USER_PROMPT.format(
-        board=state["board"], question=state["user_message"]
+        board=state["board"], question=get_latest_user_message(state)
     )
 
     system_prompt = ANALYSIS_EXTRACTION_SYSTEM_PROMPT
@@ -133,7 +128,7 @@ def rulebook_retriever(state: AnalysisState) -> Command[Literal["advisor"]]:
 
     if not state["extraction"]:
         logging.debug("rulebook_retriever node reached with empty extraction — this should not happen")
-        return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "No extraction queries available."}]}) # type: ignore
+        return Command(goto="__end__", update={"messages": state["messages"] + [{"role": "assistant", "content": "(Error) No extraction queries available."}]}) # type: ignore
     
     results = []
     for query in state["extraction"]:
@@ -153,7 +148,7 @@ def advisor(state: AnalysisState) -> Command[Literal["__end__"]]:
 
     user_prompt = ANALYSIS_ADVISOR_USER_PROMPT.format(
         board=state["board"],
-        question=state["user_message"]
+        question=get_latest_user_message(state)
     )
 
     system_prompt = ANALYSIS_ADVISOR_SYSTEM_PROMPT.format(
@@ -173,15 +168,14 @@ def advisor(state: AnalysisState) -> Command[Literal["__end__"]]:
 
 
 # Define the agent builder
-agent_builder = StateGraph(AnalysisState, input_schema=AnalysisStateInput)
-agent_builder.add_node("router", boardstate_router)
-agent_builder.add_node("retrieve_board", boardstate_retrieval)
-agent_builder.add_node("summarize_board", summarize_board_state)
-agent_builder.add_node("extract_board", extract_board_state)
-agent_builder.add_node("rule_retriever", rulebook_retriever)
-agent_builder.add_node("advisor", advisor)
-
-agent_builder.add_edge(START, "retrieve_board")
-
-# Compile the agent
-analysis_agent = agent_builder.compile(checkpointer=InMemorySaver())
+analysis_agent = (
+    StateGraph(AnalysisState, input_schema=MessagesState)
+    .add_node("retrieve_board", boardstate_retrieval)
+    .add_node("router", boardstate_router)
+    .add_node("summarize_board", summarize_board_state)
+    .add_node("extract_board", extract_board_state)
+    .add_node("rule_retriever", rulebook_retriever)
+    .add_node("advisor", advisor)
+    .add_edge(START, "retrieve_board")
+    .compile()
+)
