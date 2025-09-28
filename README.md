@@ -11,7 +11,8 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
 
 ## Quick Setup
 
-### Option 1: Docker Setup for OPTCG Project
+<details>
+<summary>Option 1: (Not Configured) Docker Setup</summary>
 
 #### Prerequisites
 
@@ -23,7 +24,7 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
 1. **Copy the environment template:**
    ```bash
    # Copy environment template
-   cp backend/example.env backend/.env
+   cp backend/.env.example backend/.env
    ```
 2. **Edit the `.env` in the `backend/` directory with your API keys.**
 3. **Start runtime:**
@@ -34,52 +35,34 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
 
 Access at http://localhost:5173
 
+</details>
+
 ### Option 2: Manual Setup
 
 #### Backend Setup
 
-1. **Activate a virtual environment in the root directory:**
+1. **Change to the `backend/` directory and set up environment:**
 
-   ```bash
-   # Create a .venv
-   python -m venv .venv
+   ```shell
+   cd backend # from root directory
+   cp example.env .env  # Add your API_KEYS
    ```
 
-2. **Activate the virtual environment:**
+2. **UV installation and runtime**
 
-   ```bash
-   # On Windows:
-   .venv\Scripts\Activate.ps1
-   # On macOS/Linux:
-   source .venv/bin/activate.bat
-   ```
+   ```shell
+   # Install uv if you haven't already
+   pip install uv
 
-3. **Install the Python package dependencies in the `backend/` directory:**
-
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # Development tools
-   ```
-
-4. **Copy the environment template:**
-   ```bash
-   cp example.env .env
-   ```
-5. **Edit the `.env` in the `backend/` directory with your API keys.**
-6. **Run the backend API from the `backend/` directory:**
-
-   ```bash
-   # Run the API with auto-reload
-   uvicorn optcg.api:app --reload --host 127.0.0.1 --port 8000
-
-   # Or run directly
-   python src.optcg/api.py
+   # Runtime with 2 workers (must run with multiple workers or will break)
+   uv run uvicorn optcg.api:app --workers 2 --host 0.0.0.0 --port 8000
    ```
 
 #### Frontend Setup
+
 1. **Open another terminal instance with the backend still running in the first one.**
 2. **Change to the `frontend/` directory, install the package requirements, and run the server:**
+
    ```bash
    cd frontend # from root directory
    npm install

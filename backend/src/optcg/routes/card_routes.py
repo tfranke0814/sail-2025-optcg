@@ -4,8 +4,7 @@ import requests
 import os
 
 # Custom Imports
-from optcg import state
-from optcg.models import CardSearchRequest
+from optcg.schemas import CardSearchRequest
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

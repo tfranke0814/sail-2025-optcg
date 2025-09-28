@@ -3,7 +3,7 @@ import logging
 
 # Custom Imports
 from optcg import state
-from optcg.models import BoardState
+from optcg.schemas import BoardState
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

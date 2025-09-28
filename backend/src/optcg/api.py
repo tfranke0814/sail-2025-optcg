@@ -1,16 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
 
+# Load environment variables from .env file if it exists
+load_dotenv()  
+
 # Custom Imports
 from optcg import state
 from optcg.routes import agent_routes, card_routes, board_routes
-
-# Load environment variables from .env file if it exists
-load_dotenv()  
 
 # Environment validation and logging setup on startup
 logging.basicConfig(
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan event to validate environment on startup"""
     try:
-        required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY", "BRAVE_SEARCH_API_KEY", "TAVILY_API_KEY"]
+        required_env_vars = ["OPENAI_API_KEY", "APITCG_API_KEY"]
         # LangSmith is optional, not required for basic functionality
         for var in required_env_vars:
             if not os.getenv(var):
