@@ -34,6 +34,7 @@ An AI assistant for the One Piece Trading Card Game that helps players with rule
    ```
 
 Access at http://localhost:5173
+
 </details>
 
 ### Option 2: Manual Setup
@@ -49,17 +50,19 @@ Access at http://localhost:5173
 
 2. **UV installation and runtime**
 
-    ```shell
-    # Install uv if you haven't already
-    pip install uv
+   ```shell
+   # Install uv if you haven't already
+   pip install uv
 
-    # Runtime with reload for development
-    uv run uvicorn optcg.api:app --reload --host 0.0.0.0 --port 8000
-    ```
+   # Runtime with 2 workers (must run with multiple workers or will break)
+   uv run uvicorn optcg.api:app --workers 2 --host 0.0.0.0 --port 8000
+   ```
 
 #### Frontend Setup
+
 1. **Open another terminal instance with the backend still running in the first one.**
 2. **Change to the `frontend/` directory, install the package requirements, and run the server:**
+
    ```bash
    cd frontend # from root directory
    npm install

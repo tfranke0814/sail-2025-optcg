@@ -838,7 +838,7 @@ const ChatWidget = forwardRef((props, ref) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            agent_type: 'userChat',
+            agent_type: 'multi_agent',
             message: 'Analyze the current board state and suggest possible moves.',
             game_state: gameState,
           }),
@@ -907,7 +907,7 @@ const ChatWidget = forwardRef((props, ref) => {
     setInput('');
     setLoading(true);
     try {
-      const body: any = { message: input, agent_type: 'userChat' };
+      const body: any = { message: input, agent_type: 'multi_agent' };
       if (threadId) body.thread_id = threadId;
       const res = await fetch('http://localhost:8000/agents/chat', {
         method: 'POST',

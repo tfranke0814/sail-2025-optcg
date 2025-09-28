@@ -1,16 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
 
+# Load environment variables from .env file if it exists
+load_dotenv()  
+
 # Custom Imports
 from optcg import state
 from optcg.routes import agent_routes, card_routes, board_routes
-
-# Load environment variables from .env file if it exists
-load_dotenv()  
 
 # Environment validation and logging setup on startup
 logging.basicConfig(

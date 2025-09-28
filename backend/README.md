@@ -15,7 +15,7 @@ For complete API documentation with interactive examples, visit:
 ```bash
 curl -X POST http://localhost:8000/agents/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "What are the One Piece TCG rules?", "agent_type": "rulebook"}'
+  -d '{"message": "What are the One Piece TCG rules?", "agent_type": "multi-agent"}'
 ```
 
 ### Search Cards
